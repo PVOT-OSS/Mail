@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <string name="reader_to">To: %1$s</string>
+    <string name="reader_no_subject">(No subject)</string>
+    <string name="reader_failed">Couldn\'t open this message</string>
+    <string name="reader_attachments">Attachments</string>
+</resources>

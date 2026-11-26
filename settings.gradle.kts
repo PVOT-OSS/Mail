@@ -93,6 +93,7 @@ include(":feature:pvot:mailboxes")
 include(":feature:pvot:messagelist")
 include(":core:pvot:syncstatus")
 include(":feature:pvot:composer")
+include(":feature:pvot:reader")
 
 includeBuild("PvotLib")
 
