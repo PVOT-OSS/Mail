@@ -21,22 +21,27 @@ internal class CommandSync(
 
         val backendFolder = backendStorage.getFolder(folderServerId)
 
-        val localMessageServerIds = backendFolder.getMessageServerIds()
-        if (localMessageServerIds.isNotEmpty()) {
-            backendFolder.setLastChecked(System.currentTimeMillis())
-            listener.syncFinished(folderServerId)
-            return
-        }
-
-        for (messageServerId in folder.messageServerIds) {
+        val delivered = backendFolder.getFolderExtraString(DELIVERED_KEY)?.split(DELIVERED_SEPARATOR)?.toSet()
+            ?: backendFolder.getMessageServerIds()
+        val newMessageServerIds = folder.messageServerIds.filterNot { it in delivered }
+        for (messageServerId in newMessageServerIds) {
             val message = demoStore.getMessage(folderServerId, messageServerId)
             backendFolder.saveMessage(message, MessageDownloadState.FULL)
             listener.syncNewMessage(folderServerId, messageServerId, isOldMessage = false)
         }
+        backendFolder.setFolderExtraString(
+            DELIVERED_KEY,
+            (delivered + newMessageServerIds).joinToString(DELIVERED_SEPARATOR),
+        )
 
         backendFolder.setMoreMessages(MoreMessages.FALSE)
         backendFolder.setLastChecked(System.currentTimeMillis())
 
         listener.syncFinished(folderServerId)
+    }
+
+    private companion object {
+        const val DELIVERED_KEY = "demoDeliveredMessageServerIds"
+        const val DELIVERED_SEPARATOR = ","
     }
 }
