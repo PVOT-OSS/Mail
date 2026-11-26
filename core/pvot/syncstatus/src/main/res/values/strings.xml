@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <string name="syncstatus_updated_just_now">Updated just now</string>
+    <plurals name="syncstatus_updated_minutes_ago">
+        <item quantity="one">Updated %d minute ago</item>
+        <item quantity="other">Updated %d minutes ago</item>
+    </plurals>
+    <string name="syncstatus_updated_at">Updated at %1$s</string>
+    <string name="syncstatus_updated_on">Updated %1$s</string>
+</resources>

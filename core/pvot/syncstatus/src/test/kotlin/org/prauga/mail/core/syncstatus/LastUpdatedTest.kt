@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
-package org.prauga.mail.feature.messagelist
+package org.prauga.mail.core.syncstatus
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo

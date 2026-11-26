@@ -34,6 +34,8 @@ import net.thunderbird.core.android.account.LegacyAccountManager
 import net.thunderbird.core.android.account.SortType
 import net.thunderbird.core.common.mail.Flag
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
+import org.prauga.mail.core.syncstatus.RefreshListener
+import org.prauga.mail.core.syncstatus.RefreshState
 
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 

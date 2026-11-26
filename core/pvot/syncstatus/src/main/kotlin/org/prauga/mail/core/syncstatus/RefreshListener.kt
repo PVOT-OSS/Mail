@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
-package org.prauga.mail.feature.messagelist
+package org.prauga.mail.core.syncstatus
 
 import android.content.Context
 import app.k9mail.legacy.message.controller.SimpleMessagingListener
 import net.thunderbird.feature.account.AccountId
 
-internal data class RefreshState(val running: Boolean = false, val lastSuccess: Long = 0L)
+data class RefreshState(val running: Boolean = false, val lastSuccess: Long = 0L)
 
-internal class RefreshListener(
+class RefreshListener(
     private val singleFolder: Boolean,
     private val onDone: (success: Boolean) -> Unit,
 ) : SimpleMessagingListener() {

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
-package org.prauga.mail.feature.messagelist
+package org.prauga.mail.core.syncstatus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,7 +20,7 @@ import kotlinx.coroutines.delay
 private const val TICK_MILLIS = 30_000L
 
 @Composable
-internal fun lastUpdatedText(epochMillis: Long): String? {
+fun lastUpdatedText(epochMillis: Long): String? {
     var tick by remember { mutableLongStateOf(0L) }
     LaunchedEffect(epochMillis) {
         while (true) {
@@ -33,21 +33,21 @@ internal fun lastUpdatedText(epochMillis: Long): String? {
     return when (updated) {
         LastUpdated.Never -> null
 
-        LastUpdated.JustNow -> stringResource(R.string.messagelist_updated_just_now)
+        LastUpdated.JustNow -> stringResource(R.string.syncstatus_updated_just_now)
 
         is LastUpdated.MinutesAgo -> pluralStringResource(
-            R.plurals.messagelist_updated_minutes_ago,
+            R.plurals.syncstatus_updated_minutes_ago,
             updated.minutes.toInt(),
             updated.minutes.toInt(),
         )
 
         is LastUpdated.Today -> stringResource(
-            R.string.messagelist_updated_at,
+            R.string.syncstatus_updated_at,
             updated.time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale)),
         )
 
         is LastUpdated.Earlier -> stringResource(
-            R.string.messagelist_updated_on,
+            R.string.syncstatus_updated_on,
             updated.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale)),
         )
     }

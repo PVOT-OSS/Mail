@@ -23,13 +23,6 @@
     <string name="messagelist_search_in">Search %1$s</string>
     <string name="messagelist_search_no_results">No results</string>
     <string name="messagelist_search_close">Close search</string>
-    <string name="messagelist_updated_just_now">Updated just now</string>
-    <plurals name="messagelist_updated_minutes_ago">
-        <item quantity="one">Updated %d minute ago</item>
-        <item quantity="other">Updated %d minutes ago</item>
-    </plurals>
-    <string name="messagelist_updated_at">Updated at %1$s</string>
-    <string name="messagelist_updated_on">Updated %1$s</string>
     <string name="messagelist_filters">Filters</string>
     <string name="messagelist_filters_include">Include</string>
     <string name="messagelist_filter_only_attachments">Only Mail with Attachments</string>

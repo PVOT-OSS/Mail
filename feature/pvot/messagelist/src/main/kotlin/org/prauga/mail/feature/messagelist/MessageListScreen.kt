@@ -57,6 +57,7 @@ import kotlinx.coroutines.launch
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.prauga.mail.core.syncstatus.lastUpdatedText
 
 private const val SUBTITLE_SEPARATOR = " · "
 
