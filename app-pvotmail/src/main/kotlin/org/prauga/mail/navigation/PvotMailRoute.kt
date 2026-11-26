@@ -26,3 +26,14 @@ data class MessageListRoute(
             MessageListRoute(title, subtitle, Base64.UrlSafe.encode(LocalMessageSearchSerializer.serialize(search)))
     }
 }
+
+@Serializable
+data class MessageSearchRoute(val scopeTitle: String, private val encodedSearch: String) : NavKey {
+    val search: LocalMessageSearch
+        get() = LocalMessageSearchSerializer.deserialize(Base64.UrlSafe.decode(encodedSearch))
+
+    companion object {
+        fun of(scopeTitle: String, search: LocalMessageSearch) =
+            MessageSearchRoute(scopeTitle, Base64.UrlSafe.encode(LocalMessageSearchSerializer.serialize(search)))
+    }
+}

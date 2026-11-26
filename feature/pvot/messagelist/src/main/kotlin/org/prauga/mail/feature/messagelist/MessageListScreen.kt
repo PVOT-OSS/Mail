@@ -3,7 +3,6 @@
 
 package org.prauga.mail.feature.messagelist
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,6 +64,7 @@ fun MessageListScreen(
     subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
     onNewMessage: () -> Unit,
+    onOpenSearch: () -> Unit,
     onBack: (() -> Unit)?,
     viewModel: MessageListViewModel = koinViewModel(key = title) { parametersOf(search) },
 ) {
@@ -100,6 +100,7 @@ fun MessageListScreen(
         subtitle = subtitle,
         onOpenMessage = onOpenMessage,
         onNewMessage = onNewMessage,
+        onOpenSearch = onOpenSearch,
         onBack = onBack,
         onEvent = viewModel::onEvent,
     )
@@ -113,16 +114,12 @@ internal fun MessageListContent(
     subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
     onNewMessage: () -> Unit,
+    onOpenSearch: () -> Unit,
     onBack: (() -> Unit)?,
     onEvent: (MessageListEvent) -> Unit,
 ) {
     val listState = rememberLazyListState()
     var showFilters by rememberSaveable { mutableStateOf(false) }
-    var searching by rememberSaveable { mutableStateOf(false) }
-    BackHandler(enabled = searching) {
-        searching = false
-        onEvent(MessageListEvent.Search(""))
-    }
     FiltersSheet(visible = showFilters, filter = state.filter, onDismiss = { showFilters = false }, onEvent = onEvent)
     val compact = rememberPvotTopBarCompact(listState)
     PvotScreenScaffold(
@@ -130,12 +127,7 @@ internal fun MessageListContent(
         bottomBar = {
             MessageListBottomBar(
                 filter = state.filter,
-                query = state.query,
-                searching = searching,
-                onSearchingChange = { active ->
-                    searching = active
-                    if (!active) onEvent(MessageListEvent.Search(""))
-                },
+                onOpenSearch = onOpenSearch,
                 onEvent = onEvent,
                 onShowFilters = { showFilters = true },
                 onNewMessage = onNewMessage,

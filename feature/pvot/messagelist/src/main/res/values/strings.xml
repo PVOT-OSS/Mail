@@ -20,6 +20,8 @@
     <string name="messagelist_filter_flagged">Flagged</string>
     <string name="messagelist_filter_attachments">Attachments</string>
     <string name="messagelist_search">Search</string>
+    <string name="messagelist_search_in">Search %1$s</string>
+    <string name="messagelist_search_no_results">No results</string>
     <string name="messagelist_search_close">Close search</string>
     <string name="messagelist_filters">Filters</string>
     <string name="messagelist_filters_include">Include</string>

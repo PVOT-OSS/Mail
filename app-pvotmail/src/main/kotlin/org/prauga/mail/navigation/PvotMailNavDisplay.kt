@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -31,6 +32,7 @@ import org.prauga.mail.R
 import org.prauga.mail.feature.mailboxes.MailboxesScreen
 import org.prauga.mail.feature.mailboxes.starredSearch
 import org.prauga.mail.feature.messagelist.MessageListScreen
+import org.prauga.mail.feature.messagelist.MessageSearchScreen
 
 @Composable
 fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
@@ -45,10 +47,6 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
             }
         }
     }
-    fun openList(route: MessageListRoute) {
-        backStack.removeAll { it is MessageListRoute }
-        backStack.add(route)
-    }
     NavDisplay(
         modifier = modifier,
         sceneStrategies = listOf(sceneStrategy),
@@ -61,34 +59,52 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
         transitionSpec = { PvotPageTransitions.push() },
         popTransitionSpec = { PvotPageTransitions.pop() },
         predictivePopTransitionSpec = { PvotPageTransitions.pop() },
-        entryProvider = entryProvider {
-            entry<MailboxesRoute>(metadata = sidebarPane()) {
-                MailboxesScreen(
-                    onOpenUnifiedInbox = { title ->
-                        openList(
-                            MessageListRoute.of(title, LocalMessageSearch.createUnifiedSearch(FolderRole.INBOX)),
-                        )
-                    },
-                    onOpenStarredMail = { title -> openList(MessageListRoute.of(title, starredSearch())) },
-                    onOpenMailbox = { accountId, folderId, title, subtitle ->
-                        openList(MessageListRoute.of(title, folderSearch(accountId, folderId), subtitle))
-                    },
-                    onNewMessage = { MessageActions.actionCompose(context) },
-                    onOpenSettings = onOpenSettings,
-                )
-            }
-            entry<MessageListRoute>(metadata = contentPane()) { route ->
-                MessageListScreen(
-                    search = route.search,
-                    title = route.title,
-                    subtitle = route.subtitle,
-                    onOpenMessage = { reference -> openMessage(context, reference) },
-                    onNewMessage = { MessageActions.actionCompose(context) },
-                    onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
-                )
-            }
-        },
+        entryProvider = mailEntries(backStack, twoPane, context, onOpenSettings),
     )
+}
+
+private fun mailEntries(
+    backStack: NavBackStack<NavKey>,
+    twoPane: Boolean,
+    context: Context,
+    onOpenSettings: () -> Unit,
+) = entryProvider {
+    fun openList(route: MessageListRoute) {
+        backStack.removeAll { it is MessageListRoute || it is MessageSearchRoute }
+        backStack.add(route)
+    }
+    entry<MailboxesRoute>(metadata = sidebarPane()) {
+        MailboxesScreen(
+            onOpenUnifiedInbox = { title ->
+                openList(MessageListRoute.of(title, LocalMessageSearch.createUnifiedSearch(FolderRole.INBOX)))
+            },
+            onOpenStarredMail = { title -> openList(MessageListRoute.of(title, starredSearch())) },
+            onOpenMailbox = { accountId, folderId, title, subtitle ->
+                openList(MessageListRoute.of(title, folderSearch(accountId, folderId), subtitle))
+            },
+            onNewMessage = { MessageActions.actionCompose(context) },
+            onOpenSettings = onOpenSettings,
+        )
+    }
+    entry<MessageListRoute>(metadata = contentPane()) { route ->
+        MessageListScreen(
+            search = route.search,
+            title = route.title,
+            subtitle = route.subtitle,
+            onOpenMessage = { reference -> openMessage(context, reference) },
+            onNewMessage = { MessageActions.actionCompose(context) },
+            onOpenSearch = { backStack.add(MessageSearchRoute.of(route.title, route.search)) },
+            onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
+        )
+    }
+    entry<MessageSearchRoute>(metadata = contentPane()) { route ->
+        MessageSearchScreen(
+            search = route.search,
+            scopeTitle = route.scopeTitle,
+            onOpenMessage = { reference -> openMessage(context, reference) },
+            onClose = { backStack.removeLastOrNull() },
+        )
+    }
 }
 
 private fun folderSearch(accountId: AccountId, folderId: Long) = LocalMessageSearch().apply {
