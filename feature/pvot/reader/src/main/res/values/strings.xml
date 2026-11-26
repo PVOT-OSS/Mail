@@ -15,4 +15,9 @@
     <string name="reader_link_check_open">Open anyway</string>
     <string name="reader_attachments">Attachments</string>
     <string name="reader_attachment_failed">Couldn\'t open this attachment</string>
+    <string name="reader_archive">Archive</string>
+    <string name="reader_delete">Delete</string>
+    <string name="reader_flag">Flag</string>
+    <string name="reader_unflag">Unflag</string>
+    <string name="reader_mark_unread">Mark as unread</string>
 </resources>

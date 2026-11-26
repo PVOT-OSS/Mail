@@ -37,6 +37,7 @@ import org.koin.core.parameter.parametersOf
 fun ReaderScreen(
     reference: MessageReference,
     onBack: (() -> Unit)?,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReaderViewModel = koinViewModel { parametersOf(reference) },
 ) {
@@ -49,6 +50,7 @@ fun ReaderScreen(
         viewModel.effects.collect { effect ->
             when (effect) {
                 ReaderEffect.AttachmentFailed -> snackbarHostState.showSnackbar(attachmentFailed)
+                ReaderEffect.Close -> onClose()
             }
         }
     }
@@ -56,6 +58,19 @@ fun ReaderScreen(
         modifier = modifier,
         snackbarHost = { PvotSnackbarHost(snackbarHostState) },
         topBar = { PvotTopBar(title = "", onBack = onBack, compact = true) },
+        bottomBar = {
+            if (state.entries.isNotEmpty()) {
+                ReaderBottomBar(
+                    isFlagged = state.isFlagged,
+                    actions = ReaderBarActions(
+                        onArchive = viewModel::archive,
+                        onDelete = viewModel::delete,
+                        onToggleFlag = viewModel::toggleFlag,
+                        onMarkUnread = viewModel::markUnread,
+                    ),
+                )
+            }
+        },
     ) { padding ->
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -82,6 +97,13 @@ fun ReaderScreen(
         }
     }
 }
+
+internal class ReaderBarActions(
+    val onArchive: () -> Unit,
+    val onDelete: () -> Unit,
+    val onToggleFlag: () -> Unit,
+    val onMarkUnread: () -> Unit,
+)
 
 internal class ConversationActions(
     val onToggle: (ThreadEntry) -> Unit,

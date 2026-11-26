@@ -99,7 +99,11 @@ private fun mailEntries(
         )
     }
     entry<MessageRoute>(metadata = detailPane()) { route ->
-        ReaderScreen(reference = route.reference, onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }))
+        ReaderScreen(
+            reference = route.reference,
+            onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
+            onClose = { backStack.removeLastOrNull() },
+        )
     }
     entry<ComposeRoute>(metadata = pageSheet()) { route ->
         ComposerScreen(accountId = route.account, onClose = { backStack.removeLastOrNull() })

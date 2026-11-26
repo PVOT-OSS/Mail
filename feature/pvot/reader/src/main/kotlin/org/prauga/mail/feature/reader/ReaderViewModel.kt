@@ -28,6 +28,7 @@ import net.thunderbird.core.common.mail.Flag
 
 sealed interface ReaderEffect {
     data object AttachmentFailed : ReaderEffect
+    data object Close : ReaderEffect
 }
 
 data class ReaderUiState(
@@ -37,6 +38,7 @@ data class ReaderUiState(
     val expanded: ImmutableSet<Long> = persistentSetOf(),
     val messages: ImmutableMap<Long, ReaderMessage> = persistentMapOf(),
     val remoteImagesShown: ImmutableSet<Long> = persistentSetOf(),
+    val isFlagged: Boolean = false,
 ) {
     val subject: String?
         get() = messages.values.firstOrNull()?.subject
@@ -93,6 +95,29 @@ class ReaderViewModel(
         }
     }
 
+    fun archive() = closeAfter { messagingController.archiveMessages(it.map(ThreadEntry::reference)) }
+
+    fun delete() = closeAfter { messagingController.deleteMessages(it.map(ThreadEntry::reference)) }
+
+    fun markUnread() = closeAfter { entries ->
+        val newest = entries.last()
+        messagingController.setFlag(newest.reference.accountId, listOf(newest.key), Flag.SEEN, false)
+    }
+
+    fun toggleFlag() {
+        val newest = mutableState.value.entries.lastOrNull() ?: return
+        val flagged = !mutableState.value.isFlagged
+        messagingController.setFlag(newest.reference.accountId, listOf(newest.key), Flag.FLAGGED, flagged)
+        mutableState.update { it.copy(isFlagged = flagged) }
+    }
+
+    private fun closeAfter(action: (List<ThreadEntry>) -> Unit) {
+        val entries = mutableState.value.entries
+        if (entries.isEmpty()) return
+        action(entries)
+        viewModelScope.launch { effectChannel.send(ReaderEffect.Close) }
+    }
+
     private fun loadBody(entry: ThreadEntry) {
         if (entry.key in mutableState.value.messages) return
         viewModelScope.launch {
@@ -103,6 +128,7 @@ class ReaderViewModel(
                 mutableState.update { state ->
                     state.copy(
                         messages = (state.messages + (entry.key to message)).toImmutableMap(),
+                        isFlagged = if (entry == state.entries.lastOrNull()) message.isStarred else state.isFlagged,
                         remoteImagesShown = if (message.loadRemoteImages) {
                             (state.remoteImagesShown + entry.key).toImmutableSet()
                         } else {
