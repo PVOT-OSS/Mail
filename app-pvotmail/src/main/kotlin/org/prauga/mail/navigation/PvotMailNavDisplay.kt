@@ -21,7 +21,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import app.k9mail.legacy.message.controller.MessageReference
 import com.fsck.k9.activity.MessageHomeActivity
-import com.fsck.k9.activity.compose.MessageActions
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.designsystem.adaptive.rememberPvotWindowLayout
 import com.prauga.pvot.designsystem.motion.PvotPageTransitions
@@ -29,6 +28,7 @@ import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderRole
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.prauga.mail.R
+import org.prauga.mail.feature.composer.ComposerScreen
 import org.prauga.mail.feature.mailboxes.MailboxesScreen
 import org.prauga.mail.feature.mailboxes.starredSearch
 import org.prauga.mail.feature.messagelist.MessageListScreen
@@ -82,7 +82,7 @@ private fun mailEntries(
             onOpenMailbox = { accountId, folderId, title, subtitle ->
                 openList(MessageListRoute.of(title, folderSearch(accountId, folderId), subtitle))
             },
-            onNewMessage = { MessageActions.actionCompose(context) },
+            onNewMessage = { backStack.add(ComposeRoute.of(null)) },
             onOpenSettings = onOpenSettings,
         )
     }
@@ -92,10 +92,13 @@ private fun mailEntries(
             title = route.title,
             subtitle = route.subtitle,
             onOpenMessage = { reference -> openMessage(context, reference) },
-            onNewMessage = { MessageActions.actionCompose(context) },
+            onNewMessage = { backStack.add(ComposeRoute.of(route.search.accountIds.singleOrNull())) },
             onOpenSearch = { backStack.add(MessageSearchRoute.of(route.title, route.search)) },
             onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
         )
+    }
+    entry<ComposeRoute>(metadata = sheetTransitions()) { route ->
+        ComposerScreen(accountId = route.account, onClose = { backStack.removeLastOrNull() })
     }
     entry<MessageSearchRoute>(metadata = contentPane()) { route ->
         MessageSearchScreen(

@@ -13,6 +13,7 @@ import net.thunderbird.core.common.oauth.OAuthConfigurationFactory
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.prauga.mail.dev.developmentModuleAdditions
+import org.prauga.mail.feature.composer.featureComposerModule
 import org.prauga.mail.feature.featureModule
 import org.prauga.mail.feature.mailboxes.featureMailboxesModule
 import org.prauga.mail.feature.messagelist.featureMessageListModule
@@ -32,6 +33,7 @@ val appModule = module {
     includes(providerModule)
     includes(featureMailboxesModule)
     includes(featureMessageListModule)
+    includes(featureComposerModule)
     includes(startupModule)
 
     single(named("ClientInfoAppName")) { BuildConfig.CLIENT_INFO_APP_NAME }

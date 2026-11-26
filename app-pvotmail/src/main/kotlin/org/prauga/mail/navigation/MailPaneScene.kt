@@ -11,7 +11,9 @@ import androidx.navigation3.runtime.metadata
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
+import androidx.navigation3.ui.NavDisplay
 import com.prauga.pvot.designsystem.adaptive.PvotTwoPane
+import com.prauga.pvot.designsystem.motion.PvotPageTransitions
 
 object SidebarPane : NavMetadataKey<Boolean>
 
@@ -20,6 +22,12 @@ object ContentPane : NavMetadataKey<Boolean>
 fun sidebarPane() = metadata { put(SidebarPane, true) }
 
 fun contentPane() = metadata { put(ContentPane, true) }
+
+fun sheetTransitions() = metadata {
+    put(NavDisplay.TransitionKey) { PvotPageTransitions.presentSheet() }
+    put(NavDisplay.PopTransitionKey) { PvotPageTransitions.dismissSheet() }
+    put(NavDisplay.PredictivePopTransitionKey) { PvotPageTransitions.dismissSheet() }
+}
 
 private class MailPaneScene<T : Any>(
     override val key: Any,
