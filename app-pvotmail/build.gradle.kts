@@ -105,6 +105,7 @@ dependencies {
     implementation(projects.feature.widget.unread)
 
     implementation(libs.pvot.design.system)
+    implementation(libs.pvot.core.ui)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)

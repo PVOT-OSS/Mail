@@ -5,4 +5,5 @@
 -->
 <resources>
     <string name="app_name" translatable="false">Pvot Mail</string>
+    <string name="pvot_mail_no_mailbox_selected">No mailbox selected</string>
 </resources>
