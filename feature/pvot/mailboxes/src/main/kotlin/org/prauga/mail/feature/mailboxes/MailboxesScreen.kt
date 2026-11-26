@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
@@ -229,6 +230,8 @@ private fun AccountRow(title: String, unread: Int, expanded: Boolean, onClick: (
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
         UnreadCount(unread)
