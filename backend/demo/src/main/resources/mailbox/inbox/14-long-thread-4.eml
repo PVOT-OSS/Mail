@@ -1,0 +1,18 @@
+MIME-Version: 1.0
+From: "Frank" <frank@example.org>
+Date: Thu, 26 Nov 2026 011:00:00 +0100
+Message-ID: <thread-long-4@example.com>
+Subject: Re: Planning the trip
+To: Team <team@example.com>
+In-Reply-To: <thread-long-3@example.com>
+References: <thread-long-1@example.com> <thread-long-2@example.com> <thread-long-3@example.com>
+Content-Type: text/plain; charset=UTF-8
+
+Message 4 of 5 in a long thread.
+
+Let's decide on the dates and the hotel.
+
+On an earlier day, someone wrote:
+> Earlier message 1 of the thread.
+> Earlier message 2 of the thread.
+> Earlier message 3 of the thread.

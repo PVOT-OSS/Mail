@@ -1,0 +1,20 @@
+MIME-Version: 1.0
+From: "Newsletter" <news@example.net>
+Date: Wed, 25 Nov 2026 10:00:00 +0100
+Message-ID: <inbox-9@example.net>
+Subject: Links and remote images
+To: User <user@example.com>
+List-Unsubscribe: <https://example.net/unsubscribe?u=1>, <mailto:unsubscribe@example.net>
+Content-Type: text/html; charset=UTF-8
+
+<html><body>
+<h2>Remote images and links</h2>
+<p>This remote image is blocked until you load images:</p>
+<img src="https://example.net/banner.png" width="300" height="80" alt="Banner">
+<p>A tracking pixel: <img src="https://example.net/pixel.gif" width="1" height="1"></p>
+<p>An honest link: <a href="https://example.org/">https://example.org/</a></p>
+<p>A misleading link: <a href="https://evil.example.net/login">https://bank.example.com/login</a></p>
+<p>A button-style link: <a href="https://example.org/offer" style="background:#5a4bff;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none">Open offer</a></p>
+<p>Mail link: <a href="mailto:support@example.net">support@example.net</a></p>
+<table border="1" cellpadding="6"><tr><th>Item</th><th>Price</th></tr><tr><td>Widget</td><td>9.99</td></tr></table>
+</body></html>

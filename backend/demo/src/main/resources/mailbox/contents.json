@@ -9,7 +9,16 @@
             "04-thread-2",
             "05-inline-image-data-uri",
             "06-inline-image-attachment",
-            "07-localpart-exceeds-length-limit"
+            "07-localpart-exceeds-length-limit",
+            "08-plain-text",
+            "09-html-links-remote-images",
+            "10-attachments",
+            "11-long-thread-1",
+            "12-long-thread-2",
+            "13-long-thread-3",
+            "14-long-thread-4",
+            "15-long-thread-5",
+            "16-calendar-invite"
         ]
     },
     "drafts": {

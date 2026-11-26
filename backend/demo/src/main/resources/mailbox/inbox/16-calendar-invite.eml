@@ -1,0 +1,30 @@
+MIME-Version: 1.0
+From: "Grace" <grace@example.com>
+Date: Thu, 26 Nov 2026 13:00:00 +0100
+Message-ID: <inbox-16@example.com>
+Subject: Invitation: Team lunch
+To: User <user@example.com>
+Content-Type: multipart/alternative; boundary=ALT
+
+--ALT
+Content-Type: text/plain; charset=UTF-8
+
+You are invited to the team lunch on Friday at 12:30.
+
+--ALT
+Content-Type: text/calendar; charset=UTF-8; method=REQUEST
+
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Example//Demo//EN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:lunch-1@example.com
+DTSTART:20261127T113000Z
+DTEND:20261127T123000Z
+SUMMARY:Team lunch
+ORGANIZER:mailto:grace@example.com
+ATTENDEE;RSVP=TRUE:mailto:user@example.com
+END:VEVENT
+END:VCALENDAR
+--ALT--
