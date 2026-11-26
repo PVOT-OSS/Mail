@@ -12,16 +12,9 @@
         android:fillColor="@color/ic_launcher_background"
         android:pathData="M54,8a46,46 0,1 1,0 92a46,46 0,1 1,0 -92z" />
     <path
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000"
-        android:pathData="M34,38h40a4,4 0,0 1,4 4v24a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-24a4,4 0,0 1,4 -4z" />
+        android:fillColor="#FF5A4BFF"
+        android:pathData="M72.727,40.804C72.473,40.348 72.163,39.94 71.781,39.557C69.794,37.562 67.04,37.493 60.232,37.322C56.057,37.217 51.943,37.217 47.768,37.322C40.96,37.493 38.206,37.562 36.219,39.557C35.837,39.94 35.527,40.348 35.273,40.804L48.125,48.085C53.263,50.997 54.737,50.997 59.875,48.085Z" />
     <path
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineJoin="round"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:pathData="M32,42l22,15l22,-15" />
+        android:fillColor="#FF5A4BFF"
+        android:pathData="M34.356,44.011C34.144,45.688 34.097,47.866 34.034,50.844C33.989,52.958 33.989,55.042 34.034,57.156C34.175,63.784 34.232,66.449 36.219,68.443C38.206,70.438 40.96,70.507 47.768,70.678C51.943,70.783 56.057,70.783 60.232,70.678C67.04,70.507 69.794,70.438 71.781,68.443C73.768,66.449 73.825,63.784 73.966,57.156C74.011,55.042 74.011,52.958 73.966,50.844C73.903,47.866 73.856,45.688 73.644,44.011L61.474,50.907C55.592,54.24 52.408,54.24 46.526,50.907Z" />
 </vector>
