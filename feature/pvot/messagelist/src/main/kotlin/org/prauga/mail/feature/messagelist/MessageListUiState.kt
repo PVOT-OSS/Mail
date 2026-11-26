@@ -9,6 +9,7 @@ data class MessageListUiState(
     val isLoading: Boolean = true,
     val rows: List<MessageRow> = emptyList(),
     val filter: FilterState = FilterState(),
+    val query: String = "",
 )
 
 data class MessageRow(

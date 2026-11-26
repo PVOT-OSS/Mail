@@ -3,6 +3,7 @@
 
 package org.prauga.mail.feature.messagelist
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -117,6 +118,11 @@ internal fun MessageListContent(
 ) {
     val listState = rememberLazyListState()
     var showFilters by rememberSaveable { mutableStateOf(false) }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = searching) {
+        searching = false
+        onEvent(MessageListEvent.Search(""))
+    }
     FiltersSheet(visible = showFilters, filter = state.filter, onDismiss = { showFilters = false }, onEvent = onEvent)
     val compact = rememberPvotTopBarCompact(listState)
     PvotScreenScaffold(
@@ -124,7 +130,13 @@ internal fun MessageListContent(
         bottomBar = {
             MessageListBottomBar(
                 filter = state.filter,
-                onToggleFilter = { onEvent(MessageListEvent.ToggleFilter) },
+                query = state.query,
+                searching = searching,
+                onSearchingChange = { active ->
+                    searching = active
+                    if (!active) onEvent(MessageListEvent.Search(""))
+                },
+                onEvent = onEvent,
                 onShowFilters = { showFilters = true },
                 onNewMessage = onNewMessage,
             )
@@ -162,75 +174,6 @@ internal fun MessageListContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun MessageListBottomBar(
-    filter: FilterState,
-    onToggleFilter: () -> Unit,
-    onShowFilters: () -> Unit,
-    onNewMessage: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        FilterButton(filter = filter, onClick = onToggleFilter)
-        if (filter.enabled) {
-            FilterLabel(filter = filter, onClick = onShowFilters, modifier = Modifier.padding(start = PvotSpacing.S))
-        }
-        Spacer(Modifier.weight(1f))
-        PvotGlassIconButton(onClick = onNewMessage) {
-            Icon(
-                painter = painterResource(R.drawable.messagelist_ic_edit),
-                contentDescription = stringResource(R.string.messagelist_new_message),
-            )
-        }
-    }
-}
-
-@Composable
-private fun FilterButton(filter: FilterState, onClick: () -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    val stateLabel =
-        stringResource(if (filter.enabled) R.string.messagelist_filter_on else R.string.messagelist_filter_off)
-    PvotGlassIconButton(
-        onClick = onClick,
-        style = if (filter.enabled) {
-            PvotGlassDefaults.Style.copy(
-                fillColor = colors.primary,
-            )
-        } else {
-            PvotGlassDefaults.Style
-        },
-        contentColor = if (filter.enabled) colors.onPrimary else colors.onSurface,
-        modifier = Modifier.semantics { stateDescription = stateLabel },
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.messagelist_ic_filter_2),
-            contentDescription = stringResource(R.string.messagelist_filter),
-        )
-    }
-}
-
-@Composable
-private fun FilterLabel(filter: FilterState, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val names = filter.include.map { stringResource(it.labelRes()) } +
-        listOfNotNull(stringResource(R.string.messagelist_filter_attachments).takeIf { filter.onlyWithAttachments })
-    Column(modifier.clickable(onClickLabel = stringResource(R.string.messagelist_filters), onClick = onClick)) {
-        Text(
-            text = stringResource(R.string.messagelist_filtered_by),
-            style = MaterialTheme.typography.labelSmall,
-        )
-        Text(
-            text = names.joinToString(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
     }
 }
 

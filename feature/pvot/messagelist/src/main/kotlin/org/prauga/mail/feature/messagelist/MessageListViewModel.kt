@@ -55,6 +55,7 @@ class MessageListViewModel(
 
     private val pendingArchives = PendingArchives()
     private val filterState = MutableStateFlow(FilterState())
+    private val query = MutableStateFlow("")
     private val effectChannel = Channel<MessageListEffect>(Channel.BUFFERED)
     val effects: Flow<MessageListEffect> = effectChannel.receiveAsFlow()
 
@@ -67,12 +68,18 @@ class MessageListViewModel(
         .mapLatest { messageListLoader.getMessageList(config).messageListItems.map { it.toRow() } }
         .flowOn(ioDispatcher)
 
-    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys, filterState) {
+    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys, filterState, query) {
             rows,
             pending,
             filter,
+            query,
         ->
-        MessageListUiState(isLoading = false, rows = rows.without(pending).filteredBy(filter), filter = filter)
+        MessageListUiState(
+            isLoading = false,
+            rows = rows.without(pending).filteredBy(filter).matching(query),
+            filter = filter,
+            query = query,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MessageListUiState())
 
     fun onEvent(event: MessageListEvent) {
@@ -83,6 +90,8 @@ class MessageListViewModel(
             }
 
             is MessageListEvent.UndoArchive -> pendingArchives.undo(event.key)
+
+            is MessageListEvent.Search -> query.value = event.query
 
             MessageListEvent.ToggleFilter -> filterState.update { it.copy(enabled = !it.enabled) }
 
