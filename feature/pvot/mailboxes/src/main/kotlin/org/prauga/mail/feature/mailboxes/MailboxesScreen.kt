@@ -33,11 +33,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prauga.pvot.designsystem.components.PvotGlassIconButton
+import com.prauga.pvot.designsystem.components.PvotGlassIconButtonDefaults
 import com.prauga.pvot.designsystem.components.PvotScreen
 import com.prauga.pvot.designsystem.components.PvotScreenDefaults
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
-import com.prauga.pvot.designsystem.components.button.PvotFab
-import com.prauga.pvot.designsystem.components.button.PvotFabDefaults
 import com.prauga.pvot.designsystem.components.list.PvotListGroup
 import com.prauga.pvot.designsystem.components.list.PvotListRow
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
@@ -88,18 +88,19 @@ internal fun MailboxesContent(
     PvotScreenScaffold(
         topBar = { MailboxesTopBar(compact = compact, onOpenSettings = onOpenSettings) },
         floatingAction = {
-            PvotFab(
-                icon = painterResource(R.drawable.mailboxes_ic_pencil_plus),
-                onClick = onNewMessage,
-                contentDescription = stringResource(R.string.mailboxes_new_message),
-            )
+            PvotGlassIconButton(onClick = onNewMessage) {
+                Icon(
+                    painter = painterResource(R.drawable.mailboxes_ic_edit),
+                    contentDescription = stringResource(R.string.mailboxes_new_message),
+                )
+            }
         },
     ) { padding ->
         PvotScreen(
             state = listState,
             contentPadding = PvotScreenDefaults.contentPadding(
                 top = padding.calculateTopPadding() + PvotSpacing.S,
-                bottom = bottom + PvotFabDefaults.Size + PvotSpacing.L * 2,
+                bottom = bottom + PvotGlassIconButtonDefaults.Size + PvotSpacing.L * 2,
             ),
             verticalArrangement = Arrangement.spacedBy(PvotSpacing.L),
             horizontalAlignment = Alignment.Start,
