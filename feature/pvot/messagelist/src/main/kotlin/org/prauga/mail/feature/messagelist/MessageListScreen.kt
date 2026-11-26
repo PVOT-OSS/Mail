@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,27 +69,29 @@ internal fun MessageListContent(
     PvotScreenScaffold(
         topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact) },
     ) { padding ->
-        when {
-            state.isLoading -> CenteredBox(padding.calculateTopPadding()) { PvotLoadingContent() }
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+            when {
+                state.isLoading -> CenteredBox(padding.calculateTopPadding()) { PvotLoadingContent() }
 
-            state.rows.isEmpty() -> CenteredBox(padding.calculateTopPadding()) {
-                PvotEmptyContent(message = stringResource(R.string.messagelist_empty))
-            }
+                state.rows.isEmpty() -> CenteredBox(padding.calculateTopPadding()) {
+                    PvotEmptyContent(message = stringResource(R.string.messagelist_empty))
+                }
 
-            else -> LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = padding.calculateTopPadding() + PvotSpacing.S,
-                    bottom = bottom + PvotSpacing.L,
-                ),
-            ) {
-                items(state.rows, key = { it.key }) { row ->
-                    SwipeableMessageRow(
-                        row = row,
-                        onOpen = { onOpenMessage(row.reference) },
-                        onEvent = onEvent,
-                        modifier = Modifier.animateItem(),
-                    )
+                else -> LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding() + PvotSpacing.S,
+                        bottom = bottom + PvotSpacing.L,
+                    ),
+                ) {
+                    items(state.rows, key = { it.key }) { row ->
+                        SwipeableMessageRow(
+                            row = row,
+                            onOpen = { onOpenMessage(row.reference) },
+                            onEvent = onEvent,
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
                 }
             }
         }
