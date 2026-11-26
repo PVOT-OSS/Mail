@@ -7,11 +7,15 @@ import app.k9mail.feature.widget.shortcut.LauncherShortcutActivity
 import com.fsck.k9.AppConfig
 import com.fsck.k9.DefaultAppConfig
 import com.fsck.k9.activity.MessageCompose
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import net.thunderbird.app.common.appCommonModule
 import net.thunderbird.core.common.oauth.OAuthConfiguration
 import net.thunderbird.core.common.oauth.OAuthConfigurationFactory
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.prauga.mail.core.mailactions.PendingMailActions
 import org.prauga.mail.dev.developmentModuleAdditions
 import org.prauga.mail.feature.composer.featureComposerModule
 import org.prauga.mail.feature.featureModule
@@ -42,6 +46,7 @@ val appModule = module {
     single(named("ClientInfoAppVersion")) { BuildConfig.VERSION_NAME }
     single<AppConfig> { appConfig }
     single<OAuthConfigurationFactory> { noOAuthProviders }
+    single { PendingMailActions(scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)) }
 
     developmentModuleAdditions()
 }

@@ -11,6 +11,6 @@ sealed interface MessageListEvent {
     data class Search(val query: String) : MessageListEvent
     data class ToggleInclude(val filter: MessageFilter) : MessageListEvent
     data class SetOnlyWithAttachments(val value: Boolean) : MessageListEvent
-    data class UndoArchive(val key: Long) : MessageListEvent
-    data class CommitArchive(val key: Long) : MessageListEvent
+    data class UndoAction(val id: Long) : MessageListEvent
+    data class CommitAction(val id: Long) : MessageListEvent
 }

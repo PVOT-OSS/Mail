@@ -29,6 +29,7 @@ val featureMessageListModule = module {
             accountManager = get(),
             mailChecker = get(),
             clock = Clock.systemDefaultZone(),
+            pendingActions = get(),
             ioDispatcher = Dispatchers.IO,
         )
     }

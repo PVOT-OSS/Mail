@@ -57,6 +57,8 @@ import kotlinx.coroutines.launch
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.prauga.mail.core.mailactions.MailActionKind
+import org.prauga.mail.core.mailactions.PendingMailAction
 import org.prauga.mail.core.syncstatus.lastUpdatedText
 
 private const val SUBTITLE_SEPARATOR = " · "
@@ -74,29 +76,8 @@ fun MessageListScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val archived = stringResource(R.string.messagelist_archived)
-    val undo = stringResource(R.string.messagelist_undo)
-    LaunchedEffect(viewModel) {
-        viewModel.effects.collect { effect ->
-            when (effect) {
-                is MessageListEffect.ShowArchiveUndo -> launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    val result = snackbarHostState.showSnackbar(
-                        message = archived,
-                        actionLabel = undo,
-                        duration = SnackbarDuration.Short,
-                    )
-                    viewModel.onEvent(
-                        if (result == SnackbarResult.ActionPerformed) {
-                            MessageListEvent.UndoArchive(effect.key)
-                        } else {
-                            MessageListEvent.CommitArchive(effect.key)
-                        },
-                    )
-                }
-            }
-        }
-    }
+    val pending by viewModel.pending.collectAsStateWithLifecycle()
+    PendingActionSnackbar(pending.lastOrNull(), snackbarHostState, onEvent = viewModel::onEvent)
     MessageListContent(
         snackbarHostState = snackbarHostState,
         state = state,
@@ -232,5 +213,34 @@ private fun CenteredBox(top: Dp, content: @Composable () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         content()
+    }
+}
+
+@Composable
+private fun PendingActionSnackbar(
+    action: PendingMailAction?,
+    snackbarHostState: SnackbarHostState,
+    onEvent: (MessageListEvent) -> Unit,
+) {
+    val message = when (action?.kind) {
+        MailActionKind.DELETE -> stringResource(R.string.messagelist_deleted)
+        else -> stringResource(R.string.messagelist_archived)
+    }
+    val undo = stringResource(R.string.messagelist_undo)
+    LaunchedEffect(action?.id) {
+        if (action == null) return@LaunchedEffect
+        snackbarHostState.currentSnackbarData?.dismiss()
+        val result = snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = undo,
+            duration = SnackbarDuration.Short,
+        )
+        onEvent(
+            if (result == SnackbarResult.ActionPerformed) {
+                MessageListEvent.UndoAction(action.id)
+            } else {
+                MessageListEvent.CommitAction(action.id)
+            },
+        )
     }
 }

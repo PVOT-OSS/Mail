@@ -15,9 +15,7 @@ import com.fsck.k9.ui.messagelist.MessageListLoader
 import java.time.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +24,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,6 +31,10 @@ import net.thunderbird.core.android.account.LegacyAccountManager
 import net.thunderbird.core.android.account.SortType
 import net.thunderbird.core.common.mail.Flag
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
+import org.prauga.mail.core.mailactions.MailActionKind
+import org.prauga.mail.core.mailactions.PendingMailAction
+import org.prauga.mail.core.mailactions.PendingMailActions
+import org.prauga.mail.core.mailactions.withoutPending
 import org.prauga.mail.core.syncstatus.RefreshListener
 import org.prauga.mail.core.syncstatus.RefreshState
 
@@ -50,6 +51,7 @@ class MessageListViewModel(
     accountManager: LegacyAccountManager,
     private val mailChecker: MessagingControllerMailChecker,
     private val clock: Clock,
+    private val pendingActions: PendingMailActions,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -63,7 +65,6 @@ class MessageListViewModel(
         sortOverrides = emptyMap(),
     )
 
-    private val pendingArchives = PendingArchives()
     private val filterState = MutableStateFlow(FilterState())
     private val query = MutableStateFlow("")
     private val refresh = MutableStateFlow(RefreshState())
@@ -72,8 +73,7 @@ class MessageListViewModel(
         accounts.filter { search.accountIds.isEmpty() || it.id in search.accountIds }.maxOfOrNull { it.lastSyncTime }
             ?: 0L
     }
-    private val effectChannel = Channel<MessageListEffect>(Channel.BUFFERED)
-    val effects: Flow<MessageListEffect> = effectChannel.receiveAsFlow()
+    val pending: StateFlow<List<PendingMailAction>> = pendingActions.pending
 
     private val loadedRows = callbackFlow {
         val listener = MessageListChangedListener { trySend(Unit) }
@@ -85,10 +85,10 @@ class MessageListViewModel(
         .flowOn(ioDispatcher)
 
     private val listState =
-        combine(loadedRows, pendingArchives.keys, filterState, query) { rows, pending, filter, query ->
+        combine(loadedRows, pendingActions.pending, filterState, query) { rows, pending, filter, query ->
             MessageListUiState(
                 isLoading = false,
-                rows = rows.without(pending).filteredBy(filter).matching(query),
+                rows = rows.withoutPending(pending) { it.key }.filteredBy(filter).matching(query),
                 filter = filter,
                 query = query,
             )
@@ -100,12 +100,13 @@ class MessageListViewModel(
 
     fun onEvent(event: MessageListEvent) {
         when (event) {
-            is MessageListEvent.Archive -> {
-                pendingArchives.add(event.row)
-                effectChannel.trySend(MessageListEffect.ShowArchiveUndo(event.row.key))
+            is MessageListEvent.Archive -> pendingActions.add(MailActionKind.ARCHIVE, setOf(event.row.key)) {
+                messagingController.archiveMessages(listOf(event.row.reference))
             }
 
-            is MessageListEvent.UndoArchive -> pendingArchives.undo(event.key)
+            is MessageListEvent.UndoAction -> pendingActions.undo(event.id)
+
+            is MessageListEvent.CommitAction -> pendingActions.commit(event.id)
 
             is MessageListEvent.Search -> query.value = event.query
 
@@ -127,8 +128,6 @@ class MessageListViewModel(
             is MessageListEvent.SetOnlyWithAttachments -> filterState.update {
                 it.copy(onlyWithAttachments = event.value)
             }
-
-            is MessageListEvent.CommitArchive -> pendingArchives.take(event.key)?.let { archive(listOf(it)) }
 
             is MessageListEvent.ToggleRead -> viewModelScope.launch(ioDispatcher) {
                 setFlag(event.row, Flag.SEEN, newState = event.row.isUnread)
@@ -165,14 +164,6 @@ class MessageListViewModel(
         refresh.update { state ->
             RefreshState(running = false, lastSuccess = if (success) clock.millis() else state.lastSuccess)
         }
-    }
-
-    override fun onCleared() {
-        archive(pendingArchives.takeAll())
-    }
-
-    private fun archive(rows: List<MessageRow>) {
-        if (rows.isNotEmpty()) messagingController.archiveMessages(rows.map { it.reference })
     }
 
     private fun setFlag(row: MessageRow, flag: Flag, newState: Boolean) {

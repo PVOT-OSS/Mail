@@ -10,6 +10,7 @@
     <string name="messagelist_action_mark_read">Read</string>
     <string name="messagelist_action_mark_unread">Unread</string>
     <string name="messagelist_archived">Archived</string>
+    <string name="messagelist_deleted">Deleted</string>
     <string name="messagelist_undo">Undo</string>
     <string name="messagelist_new_message">New message</string>
     <string name="messagelist_filter">Filter</string>

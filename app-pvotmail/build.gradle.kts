@@ -79,6 +79,7 @@ dependencies {
     implementation(projects.feature.pvot.messagelist)
     implementation(projects.feature.pvot.composer)
     implementation(projects.feature.pvot.reader)
+    implementation(projects.core.pvot.mailactions)
     implementation(projects.feature.search.implLegacy)
     implementation(projects.feature.mail.folder.api)
     implementation(projects.feature.account.settings.api)

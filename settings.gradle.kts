@@ -92,6 +92,7 @@ include(":app-pvotmail")
 include(":feature:pvot:mailboxes")
 include(":feature:pvot:messagelist")
 include(":core:pvot:syncstatus")
+include(":core:pvot:mailactions")
 include(":feature:pvot:composer")
 include(":feature:pvot:reader")
 
