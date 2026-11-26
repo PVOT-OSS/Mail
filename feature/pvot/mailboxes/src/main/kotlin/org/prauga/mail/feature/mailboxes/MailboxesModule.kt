@@ -3,6 +3,7 @@
 
 package org.prauga.mail.feature.mailboxes
 
+import java.time.Clock
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -13,6 +14,8 @@ val featureMailboxesModule = module {
             accountManager = get(),
             displayFolderRepository = get(),
             messageCountsProvider = get(),
+            mailChecker = get(),
+            clock = Clock.systemDefaultZone(),
             ioDispatcher = Dispatchers.IO,
         )
     }

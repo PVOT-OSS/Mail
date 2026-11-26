@@ -17,6 +17,7 @@ android {
 
 dependencies {
     implementation(projects.core.android.account)
+    implementation(projects.core.pvot.syncstatus)
     implementation(projects.feature.account.api)
     implementation(projects.feature.mail.account.api)
     implementation(projects.feature.mail.folder.api)

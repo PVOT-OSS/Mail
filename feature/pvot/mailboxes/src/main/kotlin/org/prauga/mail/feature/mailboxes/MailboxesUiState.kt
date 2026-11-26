@@ -10,6 +10,8 @@ data class MailboxesUiState(
     val unifiedInboxUnread: Int = 0,
     val starredUnread: Int = 0,
     val accounts: List<AccountMailboxes> = emptyList(),
+    val isRefreshing: Boolean = false,
+    val lastUpdated: Long = 0L,
 )
 
 data class AccountMailboxes(

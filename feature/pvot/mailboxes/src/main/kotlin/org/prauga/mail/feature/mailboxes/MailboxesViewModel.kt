@@ -6,11 +6,14 @@ package org.prauga.mail.feature.mailboxes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.k9mail.legacy.message.controller.MessageCountsProvider
+import app.k9mail.legacy.message.controller.MessagingControllerMailChecker
 import app.k9mail.legacy.ui.folder.DisplayFolder
 import app.k9mail.legacy.ui.folder.DisplayFolderRepository
+import java.time.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,16 +22,21 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import net.thunderbird.core.android.account.LegacyAccount
 import net.thunderbird.core.android.account.LegacyAccountManager
 import net.thunderbird.feature.mail.folder.FolderRole
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
+import org.prauga.mail.core.syncstatus.RefreshListener
+import org.prauga.mail.core.syncstatus.RefreshState
 
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MailboxesViewModel(
     accountManager: LegacyAccountManager,
+    private val mailChecker: MessagingControllerMailChecker,
+    private val clock: Clock,
     displayFolderRepository: DisplayFolderRepository,
     messageCountsProvider: MessageCountsProvider,
     ioDispatcher: CoroutineDispatcher,
@@ -57,7 +65,13 @@ class MailboxesViewModel(
         .getMessageCountsFlow(starredSearch())
         .map { it.unread }
 
-    val state: StateFlow<MailboxesUiState> = combine(unifiedInboxUnread, starredUnread, accounts) {
+    private val refresh = MutableStateFlow(RefreshState())
+
+    private val lastSyncTime: Flow<Long> = accountManager.observeAll().map { all ->
+        all.maxOfOrNull { it.lastSyncTime } ?: 0L
+    }
+
+    private val mailboxes = combine(unifiedInboxUnread, starredUnread, accounts) {
             inboxUnread,
             starred,
             accounts,
@@ -65,7 +79,26 @@ class MailboxesViewModel(
         MailboxesUiState(unifiedInboxUnread = inboxUnread, starredUnread = starred, accounts = accounts)
     }
         .flowOn(ioDispatcher)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MailboxesUiState())
+
+    val state: StateFlow<MailboxesUiState> = combine(mailboxes, refresh, lastSyncTime) { mailboxes, refresh, synced ->
+        mailboxes.copy(isRefreshing = refresh.running, lastUpdated = maxOf(synced, refresh.lastSuccess))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MailboxesUiState())
+
+    fun refresh() {
+        if (refresh.value.running) return
+        refresh.update { it.copy(running = true) }
+        mailChecker.checkMail(
+            accountId = null,
+            ignoreLastCheckedTime = true,
+            useManualWakeLock = true,
+            notify = false,
+            listener = RefreshListener(singleFolder = false) { success ->
+                refresh.update { state ->
+                    RefreshState(running = false, lastSuccess = if (success) clock.millis() else state.lastSuccess)
+                }
+            },
+        )
+    }
 
     private fun LegacyAccount.toMailboxes(folders: List<DisplayFolder>) = AccountMailboxes(
         accountId = id,

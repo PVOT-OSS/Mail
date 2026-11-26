@@ -7,6 +7,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
 import com.prauga.pvot.designsystem.components.PvotGlassIconButtonDefaults
+import com.prauga.pvot.designsystem.components.PvotPullToRefreshBox
 import com.prauga.pvot.designsystem.components.PvotScreen
 import com.prauga.pvot.designsystem.components.PvotScreenDefaults
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
@@ -48,6 +50,7 @@ import com.prauga.pvot.designsystem.theme.PvotSpacing
 import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderType
 import org.koin.compose.viewmodel.koinViewModel
+import org.prauga.mail.core.syncstatus.lastUpdatedText
 import com.prauga.pvot.designsystem.R as DesignSystemR
 
 private const val QUARTER_TURN = 90f
@@ -70,6 +73,7 @@ fun MailboxesScreen(
         onOpenMailbox = onOpenMailbox,
         onNewMessage = onNewMessage,
         onOpenSettings = onOpenSettings,
+        onRefresh = viewModel::refresh,
     )
 }
 
@@ -81,13 +85,20 @@ internal fun MailboxesContent(
     onOpenMailbox: (accountId: AccountId, folderId: Long, title: String, subtitle: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
+    onRefresh: () -> Unit,
 ) {
     val listState = rememberLazyListState()
     var expanded by rememberSaveable { mutableStateOf(emptyList<String>()) }
     val compact = rememberPvotTopBarCompact(listState)
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     PvotScreenScaffold(
-        topBar = { MailboxesTopBar(compact = compact, onOpenSettings = onOpenSettings) },
+        topBar = {
+            MailboxesTopBar(
+                compact = compact,
+                subtitle = lastUpdatedText(state.lastUpdated),
+                onOpenSettings = onOpenSettings,
+            )
+        },
         floatingAction = {
             PvotGlassIconButton(onClick = onNewMessage) {
                 Icon(
@@ -97,32 +108,39 @@ internal fun MailboxesContent(
             }
         },
     ) { padding ->
-        PvotScreen(
-            state = listState,
-            contentPadding = PvotScreenDefaults.contentPadding(
-                top = padding.calculateTopPadding() + PvotSpacing.S,
-                bottom = bottom + PvotGlassIconButtonDefaults.Size + PvotSpacing.L * 2,
-            ),
-            verticalArrangement = Arrangement.spacedBy(PvotSpacing.L),
-            horizontalAlignment = Alignment.Start,
+        PvotPullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = onRefresh,
+            indicatorPadding = PaddingValues(top = padding.calculateTopPadding()),
         ) {
-            mailboxItems(
-                state = state,
-                expanded = expanded,
-                onToggleAccount = { key -> expanded = if (key in expanded) expanded - key else expanded + key },
-                onOpenUnifiedInbox = onOpenUnifiedInbox,
-                onOpenStarredMail = onOpenStarredMail,
-                onOpenMailbox = onOpenMailbox,
-            )
+            PvotScreen(
+                state = listState,
+                contentPadding = PvotScreenDefaults.contentPadding(
+                    top = padding.calculateTopPadding() + PvotSpacing.S,
+                    bottom = bottom + PvotGlassIconButtonDefaults.Size + PvotSpacing.L * 2,
+                ),
+                verticalArrangement = Arrangement.spacedBy(PvotSpacing.L),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                mailboxItems(
+                    state = state,
+                    expanded = expanded,
+                    onToggleAccount = { key -> expanded = if (key in expanded) expanded - key else expanded + key },
+                    onOpenUnifiedInbox = onOpenUnifiedInbox,
+                    onOpenStarredMail = onOpenStarredMail,
+                    onOpenMailbox = onOpenMailbox,
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun MailboxesTopBar(compact: Boolean, onOpenSettings: () -> Unit) {
+private fun MailboxesTopBar(compact: Boolean, subtitle: String?, onOpenSettings: () -> Unit) {
     PvotTopBar(
         title = stringResource(R.string.mailboxes_title),
         compact = compact,
+        subtitle = subtitle,
         actions = {
             PvotTopBarAction(
                 icon = painterResource(R.drawable.mailboxes_ic_settings),
