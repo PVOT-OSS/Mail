@@ -39,8 +39,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MailboxesScreen(
-    onOpenUnifiedInbox: () -> Unit,
-    onOpenMailbox: (AccountId, Long) -> Unit,
+    onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
     viewModel: MailboxesViewModel = koinViewModel(),
@@ -58,8 +58,8 @@ fun MailboxesScreen(
 @Composable
 internal fun MailboxesContent(
     state: MailboxesUiState,
-    onOpenUnifiedInbox: () -> Unit,
-    onOpenMailbox: (AccountId, Long) -> Unit,
+    onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -107,18 +107,19 @@ private fun MailboxesTopBar(compact: Boolean, onOpenSettings: () -> Unit) {
 
 private fun LazyListScope.mailboxItems(
     state: MailboxesUiState,
-    onOpenUnifiedInbox: () -> Unit,
-    onOpenMailbox: (AccountId, Long) -> Unit,
+    onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
 ) {
     if (state.accounts.size > 1) {
         item(key = "unified") {
             PvotListGroup {
                 item {
+                    val title = stringResource(R.string.mailboxes_all_inboxes)
                     MailboxRow(
-                        title = stringResource(R.string.mailboxes_all_inboxes),
+                        title = title,
                         icon = R.drawable.mailboxes_ic_stack_2,
                         unread = state.unifiedInboxUnread,
-                        onClick = onOpenUnifiedInbox,
+                        onClick = { onOpenUnifiedInbox(title) },
                     )
                 }
             }
@@ -133,7 +134,7 @@ private fun LazyListScope.mailboxItems(
                         depth = mailbox.depth,
                         icon = mailbox.type.icon(),
                         unread = mailbox.unread,
-                        onClick = { onOpenMailbox(account.accountId, mailbox.folderId) },
+                        onClick = { onOpenMailbox(account.accountId, mailbox.folderId, mailbox.displayName) },
                     )
                 }
             }

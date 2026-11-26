@@ -15,6 +15,7 @@ import org.koin.dsl.module
 import org.prauga.mail.dev.developmentModuleAdditions
 import org.prauga.mail.feature.featureModule
 import org.prauga.mail.feature.mailboxes.featureMailboxesModule
+import org.prauga.mail.feature.messagelist.featureMessageListModule
 import org.prauga.mail.featureflag.pvotMailFeatureFlagModule
 import org.prauga.mail.provider.providerModule
 import org.prauga.mail.startup.startupModule
@@ -30,6 +31,7 @@ val appModule = module {
     includes(featureModule)
     includes(providerModule)
     includes(featureMailboxesModule)
+    includes(featureMessageListModule)
     includes(startupModule)
 
     single(named("ClientInfoAppName")) { BuildConfig.CLIENT_INFO_APP_NAME }

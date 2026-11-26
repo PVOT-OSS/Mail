@@ -3,6 +3,7 @@
 
 plugins {
     id(ThunderbirdPlugins.App.androidCompose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val testCoverageEnabled = providers
@@ -75,6 +76,7 @@ dependencies {
     implementation(projects.core.ui.legacy.theme2.common)
     implementation(projects.feature.launcher)
     implementation(projects.feature.pvot.mailboxes)
+    implementation(projects.feature.pvot.messagelist)
     implementation(projects.feature.search.implLegacy)
     implementation(projects.feature.mail.folder.api)
     implementation(projects.feature.account.settings.api)
@@ -103,6 +105,10 @@ dependencies {
     implementation(projects.feature.widget.unread)
 
     implementation(libs.pvot.design.system)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.pvot.design.system.views)
 
     implementation(libs.androidx.work.runtime)
