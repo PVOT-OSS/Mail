@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -32,15 +31,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
-import com.prauga.pvot.designsystem.components.PvotGlassSurface
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
-import com.prauga.pvot.designsystem.components.textfield.PvotTextField
+import com.prauga.pvot.designsystem.components.PvotSearchField
 import com.prauga.pvot.designsystem.theme.PvotSpacing
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.koin.compose.viewmodel.koinViewModel
@@ -106,19 +103,12 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onClose: (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PvotSpacing.S),
     ) {
-        PvotGlassSurface(modifier = Modifier.weight(1f), rim = false, contentPadding = PaddingValues()) {
-            PvotTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = stringResource(R.string.messagelist_search),
-                leadingIcon = {
-                    Icon(painter = painterResource(R.drawable.messagelist_ic_search), contentDescription = null)
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-            )
-        }
+        PvotSearchField(
+            query = query,
+            onQueryChange = onQueryChange,
+            placeholder = stringResource(R.string.messagelist_search),
+            modifier = Modifier.weight(1f).focusRequester(focusRequester),
+        )
         PvotGlassIconButton(onClick = onClose) {
             Icon(
                 painter = painterResource(DesignSystemR.drawable.pvot_ic_x),
