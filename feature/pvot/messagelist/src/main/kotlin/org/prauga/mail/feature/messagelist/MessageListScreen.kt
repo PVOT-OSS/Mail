@@ -9,15 +9,21 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -28,11 +34,13 @@ import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.coreui.PvotLoadingContent
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
+import com.prauga.pvot.designsystem.components.PvotSnackbarHost
 import com.prauga.pvot.designsystem.components.list.PvotSwipeAction
 import com.prauga.pvot.designsystem.components.list.PvotSwipeRow
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.rememberPvotTopBarCompact
 import com.prauga.pvot.designsystem.theme.PvotSpacing
+import kotlinx.coroutines.launch
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -46,7 +54,32 @@ fun MessageListScreen(
     viewModel: MessageListViewModel = koinViewModel(key = title) { parametersOf(search) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val archived = stringResource(R.string.messagelist_archived)
+    val undo = stringResource(R.string.messagelist_undo)
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is MessageListEffect.ShowArchiveUndo -> launch {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    val result = snackbarHostState.showSnackbar(
+                        message = archived,
+                        actionLabel = undo,
+                        duration = SnackbarDuration.Short,
+                    )
+                    viewModel.onEvent(
+                        if (result == SnackbarResult.ActionPerformed) {
+                            MessageListEvent.UndoArchive(effect.key)
+                        } else {
+                            MessageListEvent.CommitArchive(effect.key)
+                        },
+                    )
+                }
+            }
+        }
+    }
     MessageListContent(
+        snackbarHostState = snackbarHostState,
         state = state,
         title = title,
         onOpenMessage = onOpenMessage,
@@ -57,6 +90,7 @@ fun MessageListScreen(
 
 @Composable
 internal fun MessageListContent(
+    snackbarHostState: SnackbarHostState,
     state: MessageListUiState,
     title: String,
     onOpenMessage: (MessageReference) -> Unit,
@@ -68,6 +102,12 @@ internal fun MessageListContent(
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     PvotScreenScaffold(
         topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact) },
+        snackbarHost = {
+            PvotSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.navigationBarsPadding().padding(horizontal = PvotSpacing.M),
+            )
+        },
     ) { padding ->
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             when {

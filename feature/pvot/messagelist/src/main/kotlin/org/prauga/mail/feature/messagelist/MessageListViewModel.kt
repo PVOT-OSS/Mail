@@ -13,12 +13,16 @@ import com.fsck.k9.ui.messagelist.MessageListItem
 import com.fsck.k9.ui.messagelist.MessageListLoader
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.thunderbird.core.android.account.SortType
@@ -47,28 +51,46 @@ class MessageListViewModel(
         sortOverrides = emptyMap(),
     )
 
-    val state: StateFlow<MessageListUiState> = callbackFlow {
+    private val pendingArchives = PendingArchives()
+    private val effectChannel = Channel<MessageListEffect>(Channel.BUFFERED)
+    val effects: Flow<MessageListEffect> = effectChannel.receiveAsFlow()
+
+    private val loadedRows = callbackFlow {
         val listener = MessageListChangedListener { trySend(Unit) }
         messageListRepository.addListener(listener)
         send(Unit)
         awaitClose { messageListRepository.removeListener(listener) }
     }
-        .mapLatest {
-            MessageListUiState(
-                isLoading = false,
-                rows = messageListLoader.getMessageList(config).messageListItems.map { it.toRow() },
-            )
-        }
+        .mapLatest { messageListLoader.getMessageList(config).messageListItems.map { it.toRow() } }
         .flowOn(ioDispatcher)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MessageListUiState())
+
+    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys) { rows, pending ->
+        MessageListUiState(isLoading = false, rows = rows.without(pending))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MessageListUiState())
 
     fun onEvent(event: MessageListEvent) {
-        viewModelScope.launch(ioDispatcher) {
-            when (event) {
-                is MessageListEvent.Archive -> messagingController.archiveMessages(listOf(event.row.reference))
-                is MessageListEvent.ToggleRead -> setFlag(event.row, Flag.SEEN, newState = event.row.isUnread)
+        when (event) {
+            is MessageListEvent.Archive -> {
+                pendingArchives.add(event.row)
+                effectChannel.trySend(MessageListEffect.ShowArchiveUndo(event.row.key))
+            }
+
+            is MessageListEvent.UndoArchive -> pendingArchives.undo(event.key)
+
+            is MessageListEvent.CommitArchive -> pendingArchives.take(event.key)?.let { archive(listOf(it)) }
+
+            is MessageListEvent.ToggleRead -> viewModelScope.launch(ioDispatcher) {
+                setFlag(event.row, Flag.SEEN, newState = event.row.isUnread)
             }
         }
+    }
+
+    override fun onCleared() {
+        archive(pendingArchives.takeAll())
+    }
+
+    private fun archive(rows: List<MessageRow>) {
+        if (rows.isNotEmpty()) messagingController.archiveMessages(rows.map { it.reference })
     }
 
     private fun setFlag(row: MessageRow, flag: Flag, newState: Boolean) {
