@@ -9,6 +9,10 @@
     <string name="reader_failed">Couldn\'t open this message</string>
     <string name="reader_remote_images_blocked">Remote images are blocked to protect your privacy.</string>
     <string name="reader_load_images">Load images</string>
+    <string name="reader_link_check_title">Check this link</string>
+    <string name="reader_link_check_message">This link goes to %1$s, not %2$s as it shows. Open it only if you trust the sender.</string>
+    <string name="reader_link_check_cancel">Don\'t open</string>
+    <string name="reader_link_check_open">Open anyway</string>
     <string name="reader_attachments">Attachments</string>
     <string name="reader_attachment_failed">Couldn\'t open this attachment</string>
 </resources>

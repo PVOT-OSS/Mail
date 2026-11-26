@@ -18,7 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -48,6 +50,8 @@ fun ReaderScreen(
     viewModel: ReaderViewModel = koinViewModel { parametersOf(reference) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var linkToCheck by remember { mutableStateOf<Pair<String, SuspiciousLink>?>(null) }
+    SuspiciousLinkDialog(url = linkToCheck?.first, link = linkToCheck?.second, onDismiss = { linkToCheck = null })
     val snackbarHostState = remember { SnackbarHostState() }
     val attachmentFailed = stringResource(R.string.reader_attachment_failed)
     LaunchedEffect(viewModel) {
@@ -81,7 +85,12 @@ fun ReaderScreen(
                 if (current.message.hasRemoteImages && !current.showRemoteImages) {
                     RemoteImagesBar(onLoad = viewModel::loadRemoteImages)
                 }
-                ReaderBody(current.message, current.showRemoteImages, Modifier.fillMaxWidth())
+                ReaderBody(
+                    message = current.message,
+                    showRemoteImages = current.showRemoteImages,
+                    onSuspiciousLink = { url, link -> linkToCheck = url to link },
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 ReaderAttachments(attachments = current.message.attachments, onOpen = viewModel::openAttachment)
             }
         }

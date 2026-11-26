@@ -15,6 +15,7 @@ import org.koin.compose.koinInject
 internal fun ReaderBody(
     message: ReaderMessage,
     showRemoteImages: Boolean,
+    onSuspiciousLink: (url: String, link: SuspiciousLink) -> Unit,
     modifier: Modifier = Modifier,
     webViewConfigProvider: WebViewConfigProvider = koinInject(),
 ) {
@@ -29,6 +30,8 @@ internal fun ReaderBody(
         update = { webView ->
             webView.blockNetworkData(!showRemoteImages)
             webView.displayHtmlContentWithInlineAttachments(message.html, message.attachmentResolver, null)
+            webView.webViewClient =
+                LinkCheckingWebViewClient(webView.webViewClient, message.suspiciousLinks, onSuspiciousLink)
         },
         onRelease = { webView -> webView.destroy() },
     )

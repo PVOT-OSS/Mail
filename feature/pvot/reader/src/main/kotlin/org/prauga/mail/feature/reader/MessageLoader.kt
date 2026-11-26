@@ -70,6 +70,7 @@ class MessageLoader(
                     isUnread = !message.isSet(Flag.SEEN),
                     isStarred = message.isSet(Flag.FLAGGED),
                     hasRemoteImages = Utility.hasExternalImages(viewInfo.text.orEmpty()),
+                    suspiciousLinks = suspiciousLinksIn(viewInfo.text.orEmpty()),
                     loadRemoteImages = loadsImagesFrom(reference, message.from?.firstOrNull()?.address),
                 ),
             )

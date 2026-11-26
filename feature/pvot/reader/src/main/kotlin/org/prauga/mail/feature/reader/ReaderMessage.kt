@@ -23,6 +23,7 @@ data class ReaderMessage(
     val isStarred: Boolean,
     val hasRemoteImages: Boolean,
     val loadRemoteImages: Boolean,
+    val suspiciousLinks: Map<String, SuspiciousLink>,
 )
 
 data class ReaderAttachment(

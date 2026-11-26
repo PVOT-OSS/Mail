@@ -27,6 +27,8 @@ dependencies {
     implementation(projects.legacy.ui.legacy)
     implementation(projects.mail.common)
 
+    implementation(libs.jsoup)
+
     implementation(libs.pvot.design.system)
     implementation(libs.pvot.core.ui)
 }
