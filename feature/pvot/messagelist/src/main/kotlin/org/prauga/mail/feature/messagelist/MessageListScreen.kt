@@ -49,6 +49,7 @@ import org.koin.core.parameter.parametersOf
 fun MessageListScreen(
     search: LocalMessageSearch,
     title: String,
+    subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
     onBack: (() -> Unit)?,
     viewModel: MessageListViewModel = koinViewModel(key = title) { parametersOf(search) },
@@ -82,6 +83,7 @@ fun MessageListScreen(
         snackbarHostState = snackbarHostState,
         state = state,
         title = title,
+        subtitle = subtitle,
         onOpenMessage = onOpenMessage,
         onBack = onBack,
         onEvent = viewModel::onEvent,
@@ -93,6 +95,7 @@ internal fun MessageListContent(
     snackbarHostState: SnackbarHostState,
     state: MessageListUiState,
     title: String,
+    subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
     onBack: (() -> Unit)?,
     onEvent: (MessageListEvent) -> Unit,
@@ -101,7 +104,7 @@ internal fun MessageListContent(
     val compact = rememberPvotTopBarCompact(listState)
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     PvotScreenScaffold(
-        topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact) },
+        topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact, subtitle = subtitle) },
         snackbarHost = {
             PvotSnackbarHost(
                 hostState = snackbarHostState,

@@ -70,8 +70,8 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
                         )
                     },
                     onOpenStarredMail = { title -> openList(MessageListRoute.of(title, starredSearch())) },
-                    onOpenMailbox = { accountId, folderId, title ->
-                        openList(MessageListRoute.of(title, folderSearch(accountId, folderId)))
+                    onOpenMailbox = { accountId, folderId, title, subtitle ->
+                        openList(MessageListRoute.of(title, folderSearch(accountId, folderId), subtitle))
                     },
                     onNewMessage = { MessageActions.actionCompose(context) },
                     onOpenSettings = onOpenSettings,
@@ -81,6 +81,7 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
                 MessageListScreen(
                     search = route.search,
                     title = route.title,
+                    subtitle = route.subtitle,
                     onOpenMessage = { reference -> openMessage(context, reference) },
                     onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
                 )

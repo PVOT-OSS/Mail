@@ -57,7 +57,7 @@ private val AccountRowMinHeight = 56.dp
 fun MailboxesScreen(
     onOpenUnifiedInbox: (title: String) -> Unit,
     onOpenStarredMail: (title: String) -> Unit,
-    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String, subtitle: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
     viewModel: MailboxesViewModel = koinViewModel(),
@@ -78,7 +78,7 @@ internal fun MailboxesContent(
     state: MailboxesUiState,
     onOpenUnifiedInbox: (title: String) -> Unit,
     onOpenStarredMail: (title: String) -> Unit,
-    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String, subtitle: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -139,7 +139,7 @@ private fun LazyListScope.mailboxItems(
     onToggleAccount: (String) -> Unit,
     onOpenUnifiedInbox: (title: String) -> Unit,
     onOpenStarredMail: (title: String) -> Unit,
-    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String, subtitle: String) -> Unit,
 ) {
     item(key = "favourites") {
         PvotListGroup {
@@ -159,7 +159,9 @@ private fun LazyListScope.mailboxItems(
                         title = account.title,
                         icon = R.drawable.mailboxes_ic_inbox,
                         unread = inbox.unread,
-                        onClick = { onOpenMailbox(account.accountId, inbox.folderId, account.title) },
+                        onClick = {
+                            onOpenMailbox(account.accountId, inbox.folderId, inbox.displayName, account.title)
+                        },
                     )
                 }
             }
@@ -181,7 +183,7 @@ private fun LazyListScope.accountItems(
     state: MailboxesUiState,
     expanded: List<String>,
     onToggleAccount: (String) -> Unit,
-    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String, subtitle: String) -> Unit,
 ) {
     state.accounts.forEach { account ->
         val key = account.accountId.toString()
@@ -204,7 +206,14 @@ private fun LazyListScope.accountItems(
                                 depth = mailbox.depth,
                                 icon = mailbox.type.icon(),
                                 unread = mailbox.unread,
-                                onClick = { onOpenMailbox(account.accountId, mailbox.folderId, mailbox.displayName) },
+                                onClick = {
+                                    onOpenMailbox(
+                                        account.accountId,
+                                        mailbox.folderId,
+                                        mailbox.displayName,
+                                        account.title,
+                                    )
+                                },
                             )
                         }
                     }

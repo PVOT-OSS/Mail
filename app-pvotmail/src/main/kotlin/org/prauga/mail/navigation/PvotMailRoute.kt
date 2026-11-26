@@ -13,12 +13,16 @@ import net.thunderbird.feature.search.legacy.serialization.LocalMessageSearchSer
 data object MailboxesRoute : NavKey
 
 @Serializable
-data class MessageListRoute(val title: String, private val encodedSearch: String) : NavKey {
+data class MessageListRoute(
+    val title: String,
+    val subtitle: String?,
+    private val encodedSearch: String,
+) : NavKey {
     val search: LocalMessageSearch
         get() = LocalMessageSearchSerializer.deserialize(Base64.UrlSafe.decode(encodedSearch))
 
     companion object {
-        fun of(title: String, search: LocalMessageSearch) =
-            MessageListRoute(title, Base64.UrlSafe.encode(LocalMessageSearchSerializer.serialize(search)))
+        fun of(title: String, search: LocalMessageSearch, subtitle: String? = null) =
+            MessageListRoute(title, subtitle, Base64.UrlSafe.encode(LocalMessageSearchSerializer.serialize(search)))
     }
 }
