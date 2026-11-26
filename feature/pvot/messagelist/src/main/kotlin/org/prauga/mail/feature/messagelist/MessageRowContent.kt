@@ -19,25 +19,37 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prauga.pvot.designsystem.components.list.PvotAvatar
 import com.prauga.pvot.designsystem.theme.PvotSpacing
+import com.prauga.pvot.designsystem.R as DesignSystemR
 
 private val UnreadDotSize = 10.dp
 private val MetaIconSize = 16.dp
+private val AvatarSize = 40.dp
+private val TextColumnStart = PvotSpacing.S + UnreadDotSize + PvotSpacing.S + AvatarSize + PvotSpacing.S
 
 @Composable
 internal fun MessageRowContent(row: MessageRow, onClick: () -> Unit) {
     val unreadLabel = stringResource(R.string.messagelist_unread)
+    val divider = MaterialTheme.colorScheme.outlineVariant
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .drawBehind {
+                val start = TextColumnStart.toPx()
+                drawLine(divider, Offset(start, size.height), Offset(size.width, size.height), Dp.Hairline.toPx())
+            }
             .padding(horizontal = PvotSpacing.S, vertical = PvotSpacing.M),
         horizontalArrangement = Arrangement.spacedBy(PvotSpacing.S),
     ) {
@@ -51,24 +63,9 @@ internal fun MessageRowContent(row: MessageRow, onClick: () -> Unit) {
                 )
             }
         }
+        PvotAvatar(name = row.sender, colorKey = row.senderKey, size = AvatarSize)
         Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = row.sender,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (row.isUnread) FontWeight.SemiBold else FontWeight.Normal,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                MetaIcons(row)
-                Text(
-                    text = row.date,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = PvotSpacing.XS),
-                )
-            }
+            RowHeader(row)
             Text(
                 text = row.subject,
                 style = MaterialTheme.typography.bodyMedium,
@@ -85,6 +82,33 @@ internal fun MessageRowContent(row: MessageRow, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RowHeader(row: MessageRow) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = row.sender,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = if (row.isUnread) FontWeight.SemiBold else FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        MetaIcons(row)
+        Text(
+            text = row.date,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = PvotSpacing.XS),
+        )
+        Icon(
+            painter = painterResource(DesignSystemR.drawable.pvot_ic_chevron_right),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(MetaIconSize),
+        )
     }
 }
 

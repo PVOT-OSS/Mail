@@ -100,6 +100,7 @@ class MessageListViewModel(
     private fun MessageListItem.toRow() = MessageRow(
         key = databaseId,
         sender = displayName.toString(),
+        senderKey = displayAddress?.address ?: displayName.toString(),
         subject = subject.orEmpty(),
         preview = previewText,
         date = dateFormatter.format(messageDate),

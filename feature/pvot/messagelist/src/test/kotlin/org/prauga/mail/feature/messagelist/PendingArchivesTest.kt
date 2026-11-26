@@ -60,6 +60,7 @@ class PendingArchivesTest {
     private fun row(key: Long) = MessageRow(
         key = key,
         sender = "",
+        senderKey = "",
         subject = "",
         preview = "",
         date = "",

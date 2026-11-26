@@ -13,6 +13,7 @@ data class MessageListUiState(
 data class MessageRow(
     val key: Long,
     val sender: String,
+    val senderKey: String,
     val subject: String,
     val preview: String,
     val date: String,
