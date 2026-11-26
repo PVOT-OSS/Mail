@@ -24,6 +24,8 @@ import com.fsck.k9.message.html.DisplayHtmlFactory
 import com.fsck.k9.ui.helper.DisplayHtmlUiFactory
 import com.fsck.k9.view.K9WebViewClient
 import com.fsck.k9.view.MessageWebView
+import java.time.Clock
+import java.util.Locale
 import kotlin.test.Test
 import kotlinx.coroutines.CoroutineDispatcher
 import net.openid.appauth.AppAuthConfiguration
@@ -59,6 +61,8 @@ class DependencyInjectionTest {
                 Configuration::class,
                 Context::class,
                 CoroutineDispatcher::class,
+                Clock::class,
+                Locale::class,
                 DisplayMetrics::class,
                 InteractionMode::class,
                 NotificationManager::class,

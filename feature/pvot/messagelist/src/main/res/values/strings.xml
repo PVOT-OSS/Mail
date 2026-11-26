@@ -4,6 +4,7 @@
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
+    <string name="messagelist_yesterday">Yesterday</string>
     <string name="messagelist_empty">No messages</string>
     <string name="messagelist_action_archive">Archive</string>
     <string name="messagelist_action_mark_read">Read</string>

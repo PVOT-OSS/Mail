@@ -3,18 +3,29 @@
 
 package org.prauga.mail.feature.messagelist
 
+import java.time.Clock
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val featureMessageListModule = module {
+    factory {
+        MessageDateFormatter(
+            clock = Clock.systemDefaultZone(),
+            locale = Locale.getDefault(),
+            yesterday = androidContext().getString(R.string.messagelist_yesterday),
+        )
+    }
     viewModel { (search: LocalMessageSearch) ->
         MessageListViewModel(
             search = search,
             messageListLoader = get(),
             messageListRepository = get(),
             messagingController = get(),
+            dateFormatter = get(),
             ioDispatcher = Dispatchers.IO,
         )
     }

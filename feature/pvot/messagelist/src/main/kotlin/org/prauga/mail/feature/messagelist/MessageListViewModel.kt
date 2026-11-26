@@ -33,6 +33,7 @@ class MessageListViewModel(
     private val messageListLoader: MessageListLoader,
     private val messageListRepository: MessageListRepository,
     private val messagingController: MessagingControllerWrapper,
+    private val dateFormatter: MessageDateFormatter,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -79,7 +80,7 @@ class MessageListViewModel(
         sender = displayName.toString(),
         subject = subject.orEmpty(),
         preview = previewText,
-        date = displayMessageDateTime,
+        date = dateFormatter.format(messageDate),
         isUnread = !isRead,
         isStarred = isStarred,
         hasAttachments = hasAttachments,
