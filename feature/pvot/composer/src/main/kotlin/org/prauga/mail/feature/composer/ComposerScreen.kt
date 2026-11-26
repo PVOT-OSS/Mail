@@ -4,13 +4,13 @@
 package org.prauga.mail.feature.composer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -28,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
-import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.PvotSnackbarHost
 import com.prauga.pvot.designsystem.effects.PvotGlassDefaults
 import com.prauga.pvot.designsystem.theme.PvotSpacing
@@ -55,14 +54,10 @@ fun ComposerScreen(
             }
         }
     }
-    PvotScreenScaffold(
-        modifier = modifier,
-        snackbarHost = { PvotSnackbarHost(snackbarHostState) },
-    ) {
+    Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = PvotSpacing.L),
@@ -72,6 +67,7 @@ fun ComposerScreen(
             })
             ComposerFields(state = state, onEvent = viewModel::onEvent)
         }
+        PvotSnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter).imePadding())
     }
 }
 

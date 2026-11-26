@@ -40,6 +40,7 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
     val backStack = rememberNavBackStack(MailboxesRoute)
     val noMailboxSelected = stringResource(R.string.pvot_mail_no_mailbox_selected)
     val twoPane = rememberPvotWindowLayout().twoPane
+    val pageSheetStrategy = remember { PageSheetSceneStrategy<NavKey>() }
     val sceneStrategy = remember(twoPane) {
         MailPaneSceneStrategy<NavKey>(twoPane) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -49,7 +50,7 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
     }
     NavDisplay(
         modifier = modifier,
-        sceneStrategies = listOf(sceneStrategy),
+        sceneStrategies = listOf(pageSheetStrategy, sceneStrategy),
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(
@@ -97,7 +98,7 @@ private fun mailEntries(
             onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
         )
     }
-    entry<ComposeRoute>(metadata = sheetTransitions()) { route ->
+    entry<ComposeRoute>(metadata = pageSheet()) { route ->
         ComposerScreen(accountId = route.account, onClose = { backStack.removeLastOrNull() })
     }
     entry<MessageSearchRoute>(metadata = contentPane()) { route ->
