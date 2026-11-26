@@ -26,6 +26,9 @@ val featureMessageListModule = module {
             messageListRepository = get(),
             messagingController = get(),
             dateFormatter = get(),
+            accountManager = get(),
+            mailChecker = get(),
+            clock = Clock.systemDefaultZone(),
             ioDispatcher = Dispatchers.IO,
         )
     }

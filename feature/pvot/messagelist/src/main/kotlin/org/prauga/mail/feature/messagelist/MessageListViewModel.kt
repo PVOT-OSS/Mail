@@ -7,10 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.k9mail.legacy.mailstore.MessageListChangedListener
 import app.k9mail.legacy.mailstore.MessageListRepository
+import app.k9mail.legacy.message.controller.MessagingControllerMailChecker
 import com.fsck.k9.controller.MessagingControllerWrapper
 import com.fsck.k9.ui.messagelist.MessageListConfig
 import com.fsck.k9.ui.messagelist.MessageListItem
 import com.fsck.k9.ui.messagelist.MessageListLoader
+import java.time.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -22,11 +24,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.thunderbird.core.android.account.LegacyAccountManager
 import net.thunderbird.core.android.account.SortType
 import net.thunderbird.core.common.mail.Flag
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
@@ -34,12 +38,16 @@ import net.thunderbird.feature.search.legacy.LocalMessageSearch
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@Suppress("LongParameterList")
 class MessageListViewModel(
-    search: LocalMessageSearch,
+    private val search: LocalMessageSearch,
     private val messageListLoader: MessageListLoader,
     private val messageListRepository: MessageListRepository,
     private val messagingController: MessagingControllerWrapper,
     private val dateFormatter: MessageDateFormatter,
+    accountManager: LegacyAccountManager,
+    private val mailChecker: MessagingControllerMailChecker,
+    private val clock: Clock,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -56,6 +64,12 @@ class MessageListViewModel(
     private val pendingArchives = PendingArchives()
     private val filterState = MutableStateFlow(FilterState())
     private val query = MutableStateFlow("")
+    private val refresh = MutableStateFlow(RefreshState())
+
+    private val accountsSyncTime = accountManager.observeAll().map { accounts ->
+        accounts.filter { search.accountIds.isEmpty() || it.id in search.accountIds }.maxOfOrNull { it.lastSyncTime }
+            ?: 0L
+    }
     private val effectChannel = Channel<MessageListEffect>(Channel.BUFFERED)
     val effects: Flow<MessageListEffect> = effectChannel.receiveAsFlow()
 
@@ -68,18 +82,18 @@ class MessageListViewModel(
         .mapLatest { messageListLoader.getMessageList(config).messageListItems.map { it.toRow() } }
         .flowOn(ioDispatcher)
 
-    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys, filterState, query) {
-            rows,
-            pending,
-            filter,
-            query,
-        ->
-        MessageListUiState(
-            isLoading = false,
-            rows = rows.without(pending).filteredBy(filter).matching(query),
-            filter = filter,
-            query = query,
-        )
+    private val listState =
+        combine(loadedRows, pendingArchives.keys, filterState, query) { rows, pending, filter, query ->
+            MessageListUiState(
+                isLoading = false,
+                rows = rows.without(pending).filteredBy(filter).matching(query),
+                filter = filter,
+                query = query,
+            )
+        }
+
+    val state: StateFlow<MessageListUiState> = combine(listState, refresh, accountsSyncTime) { list, refresh, synced ->
+        list.copy(isRefreshing = refresh.running, lastUpdated = maxOf(synced, refresh.lastSuccess))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MessageListUiState())
 
     fun onEvent(event: MessageListEvent) {
@@ -92,6 +106,8 @@ class MessageListViewModel(
             is MessageListEvent.UndoArchive -> pendingArchives.undo(event.key)
 
             is MessageListEvent.Search -> query.value = event.query
+
+            MessageListEvent.Refresh -> startRefresh()
 
             MessageListEvent.ToggleFilter -> filterState.update { it.copy(enabled = !it.enabled) }
 
@@ -115,6 +131,37 @@ class MessageListViewModel(
             is MessageListEvent.ToggleRead -> viewModelScope.launch(ioDispatcher) {
                 setFlag(event.row, Flag.SEEN, newState = event.row.isUnread)
             }
+        }
+    }
+
+    private fun startRefresh() {
+        if (refresh.value.running) return
+        refresh.update { it.copy(running = true) }
+        val accountId = search.accountIds.singleOrNull()
+        val folderId = search.folderIds.singleOrNull()
+        val singleFolder = accountId != null && folderId != null
+        val listener = RefreshListener(singleFolder, ::finishRefresh)
+        if (singleFolder) {
+            messagingController.synchronizeMailbox(
+                requireNotNull(accountId),
+                requireNotNull(folderId),
+                notify = false,
+                listener = listener,
+            )
+        } else {
+            mailChecker.checkMail(
+                accountId = accountId,
+                ignoreLastCheckedTime = true,
+                useManualWakeLock = true,
+                notify = false,
+                listener = listener,
+            )
+        }
+    }
+
+    private fun finishRefresh(success: Boolean) {
+        refresh.update { state ->
+            RefreshState(running = false, lastSuccess = if (success) clock.millis() else state.lastSuccess)
         }
     }
 

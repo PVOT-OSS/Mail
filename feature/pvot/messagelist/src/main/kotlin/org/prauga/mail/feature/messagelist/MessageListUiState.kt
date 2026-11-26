@@ -10,6 +10,8 @@ data class MessageListUiState(
     val rows: List<MessageRow> = emptyList(),
     val filter: FilterState = FilterState(),
     val query: String = "",
+    val isRefreshing: Boolean = false,
+    val lastUpdated: Long = 0L,
 )
 
 data class MessageRow(

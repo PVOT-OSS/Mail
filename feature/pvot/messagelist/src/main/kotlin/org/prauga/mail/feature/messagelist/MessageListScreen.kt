@@ -44,6 +44,7 @@ import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.coreui.PvotLoadingContent
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
+import com.prauga.pvot.designsystem.components.PvotPullToRefreshBox
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.PvotSnackbarHost
 import com.prauga.pvot.designsystem.components.list.PvotSwipeAction
@@ -56,6 +57,8 @@ import kotlinx.coroutines.launch
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+private const val SUBTITLE_SEPARATOR = " · "
 
 @Composable
 fun MessageListScreen(
@@ -123,7 +126,7 @@ internal fun MessageListContent(
     FiltersSheet(visible = showFilters, filter = state.filter, onDismiss = { showFilters = false }, onEvent = onEvent)
     val compact = rememberPvotTopBarCompact(listState)
     PvotScreenScaffold(
-        topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact, subtitle = subtitle) },
+        topBar = { ListTopBar(title, subtitle, state.lastUpdated, onBack, compact) },
         bottomBar = {
             MessageListBottomBar(
                 filter = state.filter,
@@ -148,25 +151,43 @@ internal fun MessageListContent(
                     PvotEmptyContent(message = stringResource(R.string.messagelist_empty))
                 }
 
-                else -> LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(
-                        top = padding.calculateTopPadding() + PvotSpacing.S,
-                        bottom = padding.calculateBottomPadding() + PvotSpacing.L,
-                    ),
+                else -> PvotPullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { onEvent(MessageListEvent.Refresh) },
+                    indicatorPadding = PaddingValues(top = padding.calculateTopPadding()),
                 ) {
-                    items(state.rows, key = { it.key }) { row ->
-                        SwipeableMessageRow(
-                            row = row,
-                            onOpen = { onOpenMessage(row.reference) },
-                            onEvent = onEvent,
-                            modifier = Modifier.animateItem(),
-                        )
+                    LazyColumn(
+                        state = listState,
+                        contentPadding = PaddingValues(
+                            top = padding.calculateTopPadding() + PvotSpacing.S,
+                            bottom = padding.calculateBottomPadding() + PvotSpacing.L,
+                        ),
+                    ) {
+                        items(state.rows, key = { it.key }) { row ->
+                            SwipeableMessageRow(
+                                row = row,
+                                onOpen = { onOpenMessage(row.reference) },
+                                onEvent = onEvent,
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ListTopBar(title: String, subtitle: String?, lastUpdated: Long, onBack: (() -> Unit)?, compact: Boolean) {
+    PvotTopBar(
+        title = title,
+        onBack = onBack,
+        compact = compact,
+        subtitle = listOfNotNull(subtitle, lastUpdatedText(lastUpdated)).joinToString(SUBTITLE_SEPARATOR).ifEmpty {
+            null
+        },
+    )
 }
 
 @Composable

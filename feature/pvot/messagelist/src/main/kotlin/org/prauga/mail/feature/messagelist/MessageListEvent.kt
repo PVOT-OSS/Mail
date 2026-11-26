@@ -7,6 +7,7 @@ sealed interface MessageListEvent {
     data class Archive(val row: MessageRow) : MessageListEvent
     data class ToggleRead(val row: MessageRow) : MessageListEvent
     data object ToggleFilter : MessageListEvent
+    data object Refresh : MessageListEvent
     data class Search(val query: String) : MessageListEvent
     data class ToggleInclude(val filter: MessageFilter) : MessageListEvent
     data class SetOnlyWithAttachments(val value: Boolean) : MessageListEvent
