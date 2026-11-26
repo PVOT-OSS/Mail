@@ -6,24 +6,26 @@ package org.prauga.mail.feature.messagelist
 enum class MessageFilter {
     UNREAD,
     FLAGGED,
-    ATTACHMENTS,
     ;
 
     fun matches(row: MessageRow): Boolean = when (this) {
         UNREAD -> row.isUnread
         FLAGGED -> row.isStarred
-        ATTACHMENTS -> row.hasAttachments
     }
 }
 
 data class FilterState(
     val enabled: Boolean = false,
-    val filters: Set<MessageFilter> = setOf(MessageFilter.UNREAD),
+    val include: Set<MessageFilter> = setOf(MessageFilter.UNREAD),
+    val onlyWithAttachments: Boolean = false,
 )
 
 internal fun List<MessageRow>.filteredBy(state: FilterState): List<MessageRow> =
-    if (!state.enabled || state.filters.isEmpty()) {
+    if (!state.enabled) {
         this
     } else {
-        filter { row -> state.filters.any { it.matches(row) } }
+        filter { row ->
+            (state.include.isEmpty() || state.include.any { it.matches(row) }) &&
+                (!state.onlyWithAttachments || row.hasAttachments)
+        }
     }

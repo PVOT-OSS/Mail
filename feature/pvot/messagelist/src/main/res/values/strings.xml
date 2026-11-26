@@ -19,6 +19,9 @@
     <string name="messagelist_filter_unread">Unread</string>
     <string name="messagelist_filter_flagged">Flagged</string>
     <string name="messagelist_filter_attachments">Attachments</string>
+    <string name="messagelist_filters">Filters</string>
+    <string name="messagelist_filters_include">Include</string>
+    <string name="messagelist_filter_only_attachments">Only Mail with Attachments</string>
     <string name="messagelist_unread">Unread</string>
     <string name="messagelist_starred">Starred</string>
     <string name="messagelist_has_attachments">Has attachments</string>

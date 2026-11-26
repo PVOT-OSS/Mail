@@ -29,16 +29,24 @@ class MessageFilterTest {
 
     @Test
     fun `several filters keep rows matching any of them`() {
-        val state = FilterState(enabled = true, filters = setOf(MessageFilter.UNREAD, MessageFilter.FLAGGED))
+        val state = FilterState(enabled = true, include = setOf(MessageFilter.UNREAD, MessageFilter.FLAGGED))
 
         assertThat(testSubject.filteredBy(state).keys()).containsExactly(1L, 2L)
     }
 
     @Test
-    fun `the attachments filter keeps rows with attachments`() {
-        val state = FilterState(enabled = true, filters = setOf(MessageFilter.ATTACHMENTS))
+    fun `only with attachments narrows the included rows`() {
+        val state = FilterState(enabled = true, include = emptySet(), onlyWithAttachments = true)
 
         assertThat(testSubject.filteredBy(state).keys()).containsExactly(3L)
+    }
+
+    @Test
+    fun `only with attachments combines with an include filter`() {
+        val rows = testSubject + row(5, unread = true, attachments = true)
+        val state = FilterState(enabled = true, onlyWithAttachments = true)
+
+        assertThat(rows.filteredBy(state).keys()).containsExactly(5L)
     }
 
     private fun List<MessageRow>.keys() = map { it.key }

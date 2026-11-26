@@ -3,6 +3,7 @@
 
 package org.prauga.mail.feature.messagelist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -112,6 +116,8 @@ internal fun MessageListContent(
     onEvent: (MessageListEvent) -> Unit,
 ) {
     val listState = rememberLazyListState()
+    var showFilters by rememberSaveable { mutableStateOf(false) }
+    FiltersSheet(visible = showFilters, filter = state.filter, onDismiss = { showFilters = false }, onEvent = onEvent)
     val compact = rememberPvotTopBarCompact(listState)
     PvotScreenScaffold(
         topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact, subtitle = subtitle) },
@@ -119,6 +125,7 @@ internal fun MessageListContent(
             MessageListBottomBar(
                 filter = state.filter,
                 onToggleFilter = { onEvent(MessageListEvent.ToggleFilter) },
+                onShowFilters = { showFilters = true },
                 onNewMessage = onNewMessage,
             )
         },
@@ -159,7 +166,12 @@ internal fun MessageListContent(
 }
 
 @Composable
-private fun MessageListBottomBar(filter: FilterState, onToggleFilter: () -> Unit, onNewMessage: () -> Unit) {
+private fun MessageListBottomBar(
+    filter: FilterState,
+    onToggleFilter: () -> Unit,
+    onShowFilters: () -> Unit,
+    onNewMessage: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -169,7 +181,7 @@ private fun MessageListBottomBar(filter: FilterState, onToggleFilter: () -> Unit
     ) {
         FilterButton(filter = filter, onClick = onToggleFilter)
         if (filter.enabled) {
-            FilterLabel(filter = filter, modifier = Modifier.padding(start = PvotSpacing.S))
+            FilterLabel(filter = filter, onClick = onShowFilters, modifier = Modifier.padding(start = PvotSpacing.S))
         }
         Spacer(Modifier.weight(1f))
         PvotGlassIconButton(onClick = onNewMessage) {
@@ -206,9 +218,10 @@ private fun FilterButton(filter: FilterState, onClick: () -> Unit) {
 }
 
 @Composable
-private fun FilterLabel(filter: FilterState, modifier: Modifier = Modifier) {
-    val names = filter.filters.map { stringResource(it.labelRes()) }
-    Column(modifier) {
+private fun FilterLabel(filter: FilterState, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val names = filter.include.map { stringResource(it.labelRes()) } +
+        listOfNotNull(stringResource(R.string.messagelist_filter_attachments).takeIf { filter.onlyWithAttachments })
+    Column(modifier.clickable(onClickLabel = stringResource(R.string.messagelist_filters), onClick = onClick)) {
         Text(
             text = stringResource(R.string.messagelist_filtered_by),
             style = MaterialTheme.typography.labelSmall,
@@ -219,12 +232,6 @@ private fun FilterLabel(filter: FilterState, modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.primary,
         )
     }
-}
-
-private fun MessageFilter.labelRes(): Int = when (this) {
-    MessageFilter.UNREAD -> R.string.messagelist_filter_unread
-    MessageFilter.FLAGGED -> R.string.messagelist_filter_flagged
-    MessageFilter.ATTACHMENTS -> R.string.messagelist_filter_attachments
 }
 
 @Composable

@@ -86,6 +86,21 @@ class MessageListViewModel(
 
             MessageListEvent.ToggleFilter -> filterState.update { it.copy(enabled = !it.enabled) }
 
+            is MessageListEvent.ToggleInclude -> filterState.update { state ->
+                val include = if (event.filter in
+                    state.include
+                ) {
+                    state.include - event.filter
+                } else {
+                    state.include + event.filter
+                }
+                state.copy(include = include)
+            }
+
+            is MessageListEvent.SetOnlyWithAttachments -> filterState.update {
+                it.copy(onlyWithAttachments = event.value)
+            }
+
             is MessageListEvent.CommitArchive -> pendingArchives.take(event.key)?.let { archive(listOf(it)) }
 
             is MessageListEvent.ToggleRead -> viewModelScope.launch(ioDispatcher) {
