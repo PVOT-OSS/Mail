@@ -58,7 +58,7 @@ class MessageLoader(
                             message.getRecipients(RecipientType.CC).orEmpty().toList(),
                     ),
                     sentAt = message.sentDate?.time ?: message.internalDate?.time ?: 0L,
-                    html = viewInfo.text.orEmpty(),
+                    html = foldQuotedText(viewInfo.text.orEmpty()),
                     attachmentResolver = viewInfo.attachmentResolver,
                     attachments = viewInfo.attachments.orEmpty().filterNot { it.inlineAttachment }.map { attachment ->
                         ReaderAttachment(
