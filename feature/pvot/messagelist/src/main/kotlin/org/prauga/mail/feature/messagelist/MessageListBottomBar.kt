@@ -122,6 +122,7 @@ private fun FilterLabel(filter: FilterState, onClick: () -> Unit, modifier: Modi
         Text(
             text = stringResource(R.string.messagelist_filtered_by),
             style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = names.joinToString(),

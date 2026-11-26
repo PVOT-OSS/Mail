@@ -256,6 +256,7 @@ private fun AccountRow(title: String, unread: Int, expanded: Boolean, onClick: (
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
