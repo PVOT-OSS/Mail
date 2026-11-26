@@ -38,6 +38,7 @@ fun ReaderScreen(
     reference: MessageReference,
     onBack: (() -> Unit)?,
     onClose: () -> Unit,
+    onReply: (MessageReference, ReplyKind) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReaderViewModel = koinViewModel { parametersOf(reference) },
 ) {
@@ -67,6 +68,7 @@ fun ReaderScreen(
                         onDelete = viewModel::delete,
                         onToggleFlag = viewModel::toggleFlag,
                         onMarkUnread = viewModel::markUnread,
+                        onReply = { kind -> state.entries.lastOrNull()?.let { onReply(it.reference, kind) } },
                     ),
                 )
             }
@@ -103,6 +105,7 @@ internal class ReaderBarActions(
     val onDelete: () -> Unit,
     val onToggleFlag: () -> Unit,
     val onMarkUnread: () -> Unit,
+    val onReply: (ReplyKind) -> Unit,
 )
 
 internal class ConversationActions(

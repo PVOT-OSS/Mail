@@ -74,6 +74,14 @@ internal fun ComposerFields(state: ComposerUiState, onEvent: (ComposerEvent) -> 
                 modifier = Modifier.padding(bottom = PvotSpacing.L),
             )
         }
+        state.quotedText?.let { quoted ->
+            Text(
+                text = quoted.trimEnd(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = PvotSpacing.L),
+            )
+        }
     }
 }
 

@@ -15,14 +15,20 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.thunderbird.components.core.logging.Logger
 import net.thunderbird.core.android.account.LegacyAccount
 import net.thunderbird.core.android.account.LegacyAccountManager
 import net.thunderbird.feature.account.AccountId
 
+private const val TAG = "ComposerViewModel"
+
 class ComposerViewModel(
     private val accountId: AccountId?,
+    private val source: ComposeSource?,
     private val accountManager: LegacyAccountManager,
     private val messageSender: MessageSender,
+    private val replyDraftLoader: ReplyDraftLoader,
+    private val logger: Logger,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -33,6 +39,7 @@ class ComposerViewModel(
     val effects: Flow<ComposerEffect> = effectChannel.receiveAsFlow()
 
     private var account: LegacyAccount? = null
+    private var replyHeaders: ReplyHeaders? = null
 
     init {
         viewModelScope.launch {
@@ -41,6 +48,35 @@ class ComposerViewModel(
             mutableState.update { state ->
                 state.copy(fromAddresses = found.identities.map { it.email.orEmpty() }).withSignature(found, 0)
             }
+            source?.let { prefill(found, it) }
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun prefill(account: LegacyAccount, source: ComposeSource) {
+        val draft = withContext(ioDispatcher) {
+            try {
+                replyDraftLoader.load(account, source)
+            } catch (e: Exception) {
+                logger.error(tag = TAG, throwable = e) { "Couldn't load the message to reply to" }
+                null
+            }
+        } ?: return
+        replyHeaders = ReplyHeaders(
+            source = source,
+            quotedText = draft.quotedText,
+            inReplyTo = draft.inReplyTo,
+            references = draft.references,
+            signatureBeforeQuotedText = account.isSignatureBeforeQuotedText,
+        )
+        mutableState.update { state ->
+            state.copy(
+                to = draft.to.joinToString(", "),
+                cc = draft.cc.joinToString(", "),
+                subject = draft.subject,
+                quotedText = draft.quotedText,
+                showCcBcc = draft.cc.isNotEmpty(),
+            ).withSignature(account, draft.identityIndex)
         }
     }
 
@@ -81,6 +117,7 @@ class ComposerViewModel(
                     bcc = recipientsOf(current.bcc),
                     subject = current.subject,
                     body = current.body,
+                    reply = replyHeaders,
                 ),
             )
             mutableState.update { it.copy(isSending = false) }

@@ -46,6 +46,7 @@ import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
 import org.openintents.openpgp.OpenPgpApiManager
+import org.prauga.mail.feature.composer.ComposeSource
 import org.prauga.mail.feature.composer.ComposerViewModel
 import org.prauga.mail.feature.messagelist.MessageListViewModel
 import org.prauga.mail.feature.reader.ReaderViewModel
@@ -88,7 +89,7 @@ class DependencyInjectionTest {
                 definition<SyncDebugWorker>(WorkerParameters::class),
                 definition<OpenPgpApiManager>(LifecycleOwner::class),
                 definition<MessageListViewModel>(LocalMessageSearch::class),
-                definition<ComposerViewModel>(AccountId::class),
+                definition<ComposerViewModel>(AccountId::class, ComposeSource::class),
                 definition<ReaderViewModel>(MessageReference::class),
                 definition<SetupArchiveFolderDialogContract.ViewModel>(SetupArchiveFolderDialogContract.State::class),
                 definition<ThundermailContract.ViewModel>(ThundermailContract.State::class),

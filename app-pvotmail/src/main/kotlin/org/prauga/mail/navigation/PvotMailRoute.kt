@@ -11,6 +11,8 @@ import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.account.AccountIdFactory
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import net.thunderbird.feature.search.legacy.serialization.LocalMessageSearchSerializer
+import org.prauga.mail.feature.composer.ComposeMode
+import org.prauga.mail.feature.composer.ComposeSource
 
 @Serializable
 data object MailboxesRoute : NavKey
@@ -42,12 +44,28 @@ data class MessageSearchRoute(val scopeTitle: String, private val encodedSearch:
 }
 
 @Serializable
-data class ComposeRoute(private val accountId: String? = null) : NavKey {
+data class ComposeRoute(
+    private val accountId: String? = null,
+    private val sourceIdentity: String? = null,
+    private val mode: ComposeMode? = null,
+) : NavKey {
     val account: AccountId?
         get() = accountId?.let { AccountIdFactory.of(it) }
 
+    val source: ComposeSource?
+        get() {
+            val reference = sourceIdentity?.let { MessageReference.parse(it) }
+            return if (reference != null && mode != null) ComposeSource(reference, mode) else null
+        }
+
     companion object {
         fun of(account: AccountId?) = ComposeRoute(account?.toString())
+
+        fun of(source: ComposeSource) = ComposeRoute(
+            accountId = source.reference.accountId.toString(),
+            sourceIdentity = source.reference.toIdentityString(),
+            mode = source.mode,
+        )
     }
 }
 

@@ -22,6 +22,7 @@ dependencies {
     implementation(projects.feature.account.api)
     implementation(projects.feature.mail.account.api)
     implementation(projects.legacy.core)
+    implementation(projects.legacy.message)
     implementation(projects.mail.common)
 
     implementation(libs.pvot.design.system)

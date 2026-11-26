@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.prauga.pvot.designsystem.components.PvotGlassIconButton
+import com.prauga.pvot.designsystem.components.PvotMenu
+import com.prauga.pvot.designsystem.components.PvotMenuItem
 import com.prauga.pvot.designsystem.theme.PvotSpacing
 
 @Composable
@@ -42,7 +44,32 @@ internal fun ReaderBottomBar(isFlagged: Boolean, actions: ReaderBarActions, modi
             highlighted = isFlagged,
         )
         BarButton(R.drawable.reader_ic_mail, R.string.reader_mark_unread, actions.onMarkUnread)
+        ReplyMenu(onReply = actions.onReply)
     }
+}
+
+@Composable
+private fun ReplyMenu(onReply: (ReplyKind) -> Unit) {
+    PvotMenu(
+        entries = listOf(
+            PvotMenuItem(stringResource(R.string.reader_reply), {
+                onReply(ReplyKind.REPLY)
+            }, R.drawable.reader_ic_arrow_back_up),
+            PvotMenuItem(
+                stringResource(R.string.reader_reply_all),
+                { onReply(ReplyKind.REPLY_ALL) },
+                R.drawable.reader_ic_arrow_back_up_double,
+            ),
+            PvotMenuItem(
+                stringResource(R.string.reader_forward),
+                { onReply(ReplyKind.FORWARD) },
+                R.drawable.reader_ic_arrow_forward_up,
+            ),
+        ),
+        contentDescription = stringResource(R.string.reader_reply),
+        icon = R.drawable.reader_ic_arrow_back_up,
+        backdrop = null,
+    )
 }
 
 @Composable

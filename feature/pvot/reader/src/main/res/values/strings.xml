@@ -20,4 +20,7 @@
     <string name="reader_flag">Flag</string>
     <string name="reader_unflag">Unflag</string>
     <string name="reader_mark_unread">Mark as unread</string>
+    <string name="reader_reply">Reply</string>
+    <string name="reader_reply_all">Reply all</string>
+    <string name="reader_forward">Forward</string>
 </resources>

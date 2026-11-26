@@ -25,12 +25,15 @@ import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderRole
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.prauga.mail.R
+import org.prauga.mail.feature.composer.ComposeMode
+import org.prauga.mail.feature.composer.ComposeSource
 import org.prauga.mail.feature.composer.ComposerScreen
 import org.prauga.mail.feature.mailboxes.MailboxesScreen
 import org.prauga.mail.feature.mailboxes.starredSearch
 import org.prauga.mail.feature.messagelist.MessageListScreen
 import org.prauga.mail.feature.messagelist.MessageSearchScreen
 import org.prauga.mail.feature.reader.ReaderScreen
+import org.prauga.mail.feature.reader.ReplyKind
 
 @Composable
 fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
@@ -103,10 +106,13 @@ private fun mailEntries(
             reference = route.reference,
             onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
             onClose = { backStack.removeLastOrNull() },
+            onReply = { reference, kind ->
+                backStack.add(ComposeRoute.of(ComposeSource(reference, kind.toComposeMode())))
+            },
         )
     }
     entry<ComposeRoute>(metadata = pageSheet()) { route ->
-        ComposerScreen(accountId = route.account, onClose = { backStack.removeLastOrNull() })
+        ComposerScreen(accountId = route.account, source = route.source, onClose = { backStack.removeLastOrNull() })
     }
     entry<MessageSearchRoute>(metadata = contentPane()) { route ->
         MessageSearchScreen(
@@ -121,4 +127,10 @@ private fun mailEntries(
 private fun folderSearch(accountId: AccountId, folderId: Long) = LocalMessageSearch().apply {
     addAccountId(accountId)
     addAllowedFolder(folderId)
+}
+
+private fun ReplyKind.toComposeMode(): ComposeMode = when (this) {
+    ReplyKind.REPLY -> ComposeMode.REPLY
+    ReplyKind.REPLY_ALL -> ComposeMode.REPLY_ALL
+    ReplyKind.FORWARD -> ComposeMode.FORWARD
 }

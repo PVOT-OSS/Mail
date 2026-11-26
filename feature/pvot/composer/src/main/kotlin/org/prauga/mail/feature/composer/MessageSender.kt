@@ -31,6 +31,15 @@ data class OutgoingMessage(
     val bcc: List<Address>,
     val subject: String,
     val body: String,
+    val reply: ReplyHeaders? = null,
+)
+
+data class ReplyHeaders(
+    val source: ComposeSource,
+    val quotedText: String,
+    val inReplyTo: String?,
+    val references: String?,
+    val signatureBeforeQuotedText: Boolean,
 )
 
 class MessageSender(
@@ -41,8 +50,22 @@ class MessageSender(
     suspend fun send(message: OutgoingMessage): Result<Unit> {
         val built = withContext(Dispatchers.Main) { build(message) }
         return built.mapCatching { mime ->
-            withContext(ioDispatcher) { messagingController.sendMessage(message.accountId, mime, null, null) }
+            withContext(ioDispatcher) {
+                messagingController.sendMessage(message.accountId, mime, null, null)
+                message.reply?.source?.let { markRelated(it) }
+            }
         }
+    }
+
+    private fun markRelated(source: ComposeSource) {
+        val reference = source.reference
+        messagingController.setFlag(
+            reference.accountId,
+            reference.folderId,
+            reference.uid,
+            source.mode.relatedFlag,
+            true,
+        )
     }
 
     private suspend fun build(message: OutgoingMessage): Result<MimeMessage> = suspendCancellableCoroutine { cont ->
@@ -59,7 +82,11 @@ class MessageSender(
             .setAttachments(emptyList())
             .setSignature(message.identity.signature?.toCrLf())
             .setQuoteStyle(QuoteStyle.PREFIX)
-            .setQuotedTextMode(QuotedTextMode.NONE)
+            .setQuotedTextMode(if (message.reply == null) QuotedTextMode.NONE else QuotedTextMode.SHOW)
+            .setQuotedText(message.reply?.quotedText.orEmpty())
+            .setInReplyTo(message.reply?.inReplyTo)
+            .setReferences(message.reply?.references)
+            .setSignatureBeforeQuotedText(message.reply?.signatureBeforeQuotedText ?: false)
             .setDraft(false)
         builder.buildAsync(
             object : MessageBuilder.Callback {

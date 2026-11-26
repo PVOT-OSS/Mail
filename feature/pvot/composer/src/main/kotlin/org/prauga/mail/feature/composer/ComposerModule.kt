@@ -12,11 +12,15 @@ val featureComposerModule = module {
     factory {
         MessageSender(messagingController = get(), generalSettingsManager = get(), ioDispatcher = Dispatchers.IO)
     }
-    viewModel { (accountId: AccountId?) ->
+    factory { ReplyDraftLoader(messagingController = get(), textQuoteCreator = get()) }
+    viewModel { (accountId: AccountId?, source: ComposeSource?) ->
         ComposerViewModel(
             accountId = accountId,
+            source = source,
             accountManager = get(),
             messageSender = get(),
+            replyDraftLoader = get(),
+            logger = get(),
             ioDispatcher = Dispatchers.IO,
         )
     }

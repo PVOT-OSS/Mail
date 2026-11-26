@@ -41,7 +41,8 @@ fun ComposerScreen(
     accountId: AccountId?,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ComposerViewModel = koinViewModel { parametersOf(accountId) },
+    source: ComposeSource? = null,
+    viewModel: ComposerViewModel = koinViewModel { parametersOf(accountId, source) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -62,9 +63,12 @@ fun ComposerScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = PvotSpacing.L),
         ) {
-            ComposerHeader(canSend = state.canSend, onClose = onClose, onSend = {
-                viewModel.onEvent(ComposerEvent.Send)
-            })
+            ComposerHeader(
+                title = state.subject.ifBlank { stringResource(R.string.composer_title) },
+                canSend = state.canSend,
+                onClose = onClose,
+                onSend = { viewModel.onEvent(ComposerEvent.Send) },
+            )
             ComposerFields(state = state, onEvent = viewModel::onEvent)
         }
         PvotSnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter).imePadding())
@@ -72,7 +76,7 @@ fun ComposerScreen(
 }
 
 @Composable
-private fun ComposerHeader(canSend: Boolean, onClose: () -> Unit, onSend: () -> Unit) {
+private fun ComposerHeader(title: String, canSend: Boolean, onClose: () -> Unit, onSend: () -> Unit) {
     Column {
         val colors = MaterialTheme.colorScheme
         Row(
@@ -104,7 +108,7 @@ private fun ComposerHeader(canSend: Boolean, onClose: () -> Unit, onSend: () -> 
             }
         }
         Text(
-            text = stringResource(R.string.composer_title),
+            text = title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,

@@ -12,6 +12,7 @@ data class ComposerUiState(
     val subject: String = "",
     val body: String = "",
     val signature: String? = null,
+    val quotedText: String? = null,
     val showCcBcc: Boolean = false,
     val isSending: Boolean = false,
 ) {
