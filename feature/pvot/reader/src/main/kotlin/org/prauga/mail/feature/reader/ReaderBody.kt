@@ -3,6 +3,7 @@
 
 package org.prauga.mail.feature.reader
 
+import android.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,6 +22,7 @@ internal fun ReaderBody(
         factory = { context ->
             MessageWebView(context).apply {
                 configure(webViewConfigProvider.createForMessageView())
+                setBackgroundColor(Color.TRANSPARENT)
                 blockNetworkData(true)
             }
         },
