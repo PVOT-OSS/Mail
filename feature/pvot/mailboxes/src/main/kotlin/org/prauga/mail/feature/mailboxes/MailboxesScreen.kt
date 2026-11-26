@@ -4,9 +4,14 @@
 package org.prauga.mail.feature.mailboxes
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -17,10 +22,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.designsystem.components.PvotScreen
 import com.prauga.pvot.designsystem.components.PvotScreenDefaults
@@ -36,10 +47,15 @@ import com.prauga.pvot.designsystem.theme.PvotSpacing
 import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderType
 import org.koin.compose.viewmodel.koinViewModel
+import com.prauga.pvot.designsystem.R as DesignSystemR
+
+private const val QUARTER_TURN = 90f
+private val AccountRowMinHeight = 56.dp
 
 @Composable
 fun MailboxesScreen(
     onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenStarredMail: (title: String) -> Unit,
     onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -49,6 +65,7 @@ fun MailboxesScreen(
     MailboxesContent(
         state = state,
         onOpenUnifiedInbox = onOpenUnifiedInbox,
+        onOpenStarredMail = onOpenStarredMail,
         onOpenMailbox = onOpenMailbox,
         onNewMessage = onNewMessage,
         onOpenSettings = onOpenSettings,
@@ -59,11 +76,13 @@ fun MailboxesScreen(
 internal fun MailboxesContent(
     state: MailboxesUiState,
     onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenStarredMail: (title: String) -> Unit,
     onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
     onNewMessage: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val listState = rememberLazyListState()
+    var expanded by rememberSaveable { mutableStateOf(emptyList<String>()) }
     val compact = rememberPvotTopBarCompact(listState)
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     PvotScreenScaffold(
@@ -85,7 +104,14 @@ internal fun MailboxesContent(
             verticalArrangement = Arrangement.spacedBy(PvotSpacing.L),
             horizontalAlignment = Alignment.Start,
         ) {
-            mailboxItems(state, onOpenUnifiedInbox, onOpenMailbox)
+            mailboxItems(
+                state = state,
+                expanded = expanded,
+                onToggleAccount = { key -> expanded = if (key in expanded) expanded - key else expanded + key },
+                onOpenUnifiedInbox = onOpenUnifiedInbox,
+                onOpenStarredMail = onOpenStarredMail,
+                onOpenMailbox = onOpenMailbox,
+            )
         }
     }
 }
@@ -107,38 +133,121 @@ private fun MailboxesTopBar(compact: Boolean, onOpenSettings: () -> Unit) {
 
 private fun LazyListScope.mailboxItems(
     state: MailboxesUiState,
+    expanded: List<String>,
+    onToggleAccount: (String) -> Unit,
     onOpenUnifiedInbox: (title: String) -> Unit,
+    onOpenStarredMail: (title: String) -> Unit,
     onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
 ) {
-    if (state.accounts.size > 1) {
-        item(key = "unified") {
-            PvotListGroup {
+    item(key = "favourites") {
+        PvotListGroup {
+            item {
+                val title = stringResource(R.string.mailboxes_all_inboxes)
+                MailboxRow(
+                    title = title,
+                    icon = R.drawable.mailboxes_ic_stack_2,
+                    unread = state.unifiedInboxUnread,
+                    onClick = { onOpenUnifiedInbox(title) },
+                )
+            }
+            state.accounts.forEach { account ->
+                val inbox = account.inbox ?: return@forEach
                 item {
-                    val title = stringResource(R.string.mailboxes_all_inboxes)
                     MailboxRow(
-                        title = title,
-                        icon = R.drawable.mailboxes_ic_stack_2,
-                        unread = state.unifiedInboxUnread,
-                        onClick = { onOpenUnifiedInbox(title) },
+                        title = account.title,
+                        icon = R.drawable.mailboxes_ic_inbox,
+                        unread = inbox.unread,
+                        onClick = { onOpenMailbox(account.accountId, inbox.folderId, account.title) },
                     )
+                }
+            }
+            item {
+                val title = stringResource(R.string.mailboxes_starred)
+                MailboxRow(
+                    title = title,
+                    icon = R.drawable.mailboxes_ic_star,
+                    unread = state.starredUnread,
+                    onClick = { onOpenStarredMail(title) },
+                )
+            }
+        }
+    }
+    accountItems(state, expanded, onToggleAccount, onOpenMailbox)
+}
+
+private fun LazyListScope.accountItems(
+    state: MailboxesUiState,
+    expanded: List<String>,
+    onToggleAccount: (String) -> Unit,
+    onOpenMailbox: (accountId: AccountId, folderId: Long, title: String) -> Unit,
+) {
+    state.accounts.forEach { account ->
+        val key = account.accountId.toString()
+        val isExpanded = key in expanded
+        item(key = "account-$key") {
+            AccountRow(
+                title = account.title,
+                unread = account.inbox?.unread ?: 0,
+                expanded = isExpanded,
+                onClick = { onToggleAccount(key) },
+            )
+        }
+        if (isExpanded && account.otherMailboxes.isNotEmpty()) {
+            item(key = "folders-$key") {
+                PvotListGroup {
+                    account.otherMailboxes.forEach { mailbox ->
+                        item {
+                            MailboxRow(
+                                title = mailbox.displayName,
+                                depth = mailbox.depth,
+                                icon = mailbox.type.icon(),
+                                unread = mailbox.unread,
+                                onClick = { onOpenMailbox(account.accountId, mailbox.folderId, mailbox.displayName) },
+                            )
+                        }
+                    }
                 }
             }
         }
     }
-    items(state.accounts, key = { it.accountId.toString() }) { account ->
-        PvotListGroup(title = account.title) {
-            account.mailboxes.forEach { mailbox ->
-                item {
-                    MailboxRow(
-                        title = mailbox.displayName,
-                        depth = mailbox.depth,
-                        icon = mailbox.type.icon(),
-                        unread = mailbox.unread,
-                        onClick = { onOpenMailbox(account.accountId, mailbox.folderId, mailbox.displayName) },
-                    )
-                }
-            }
-        }
+}
+
+@Composable
+private fun AccountRow(title: String, unread: Int, expanded: Boolean, onClick: () -> Unit) {
+    val rotation by animateFloatAsState(if (expanded) QUARTER_TURN else 0f, label = "chevron")
+    val stateLabel = stringResource(if (expanded) R.string.mailboxes_collapse else R.string.mailboxes_expand)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = AccountRowMinHeight)
+            .clickable(onClickLabel = stateLabel, onClick = onClick)
+            .padding(horizontal = PvotSpacing.L),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f),
+        )
+        UnreadCount(unread)
+        Icon(
+            painter = painterResource(DesignSystemR.drawable.pvot_ic_chevron_right),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = PvotSpacing.S).rotate(rotation),
+        )
+    }
+}
+
+@Composable
+private fun UnreadCount(unread: Int) {
+    if (unread > 0) {
+        Text(
+            text = unread.toString(),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -160,16 +269,16 @@ private fun MailboxRow(
                 modifier = Modifier.padding(start = PvotSpacing.L * depth),
             )
         },
-        trailing = if (unread > 0) {
-            {
-                Text(
-                    text = unread.toString(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+        trailing = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                UnreadCount(unread)
+                Icon(
+                    painter = painterResource(DesignSystemR.drawable.pvot_ic_chevron_right),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = PvotSpacing.S),
                 )
             }
-        } else {
-            null
         },
         onClick = onClick,
     )

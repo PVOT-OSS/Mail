@@ -53,8 +53,16 @@ class MailboxesViewModel(
         .getMessageCountsFlow(LocalMessageSearch.createUnifiedSearch(FolderRole.INBOX))
         .map { it.unread }
 
-    val state: StateFlow<MailboxesUiState> = combine(unifiedInboxUnread, accounts) { unread, accounts ->
-        MailboxesUiState(unifiedInboxUnread = unread, accounts = accounts)
+    private val starredUnread: Flow<Int> = messageCountsProvider
+        .getMessageCountsFlow(starredSearch())
+        .map { it.unread }
+
+    val state: StateFlow<MailboxesUiState> = combine(unifiedInboxUnread, starredUnread, accounts) {
+            inboxUnread,
+            starred,
+            accounts,
+        ->
+        MailboxesUiState(unifiedInboxUnread = inboxUnread, starredUnread = starred, accounts = accounts)
     }
         .flowOn(ioDispatcher)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MailboxesUiState())

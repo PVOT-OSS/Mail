@@ -8,6 +8,7 @@ import net.thunderbird.feature.mail.folder.FolderType
 
 data class MailboxesUiState(
     val unifiedInboxUnread: Int = 0,
+    val starredUnread: Int = 0,
     val accounts: List<AccountMailboxes> = emptyList(),
 )
 
@@ -15,7 +16,13 @@ data class AccountMailboxes(
     val accountId: AccountId,
     val title: String,
     val mailboxes: List<Mailbox>,
-)
+) {
+    val inbox: Mailbox?
+        get() = mailboxes.firstOrNull { it.type == FolderType.INBOX }
+
+    val otherMailboxes: List<Mailbox>
+        get() = mailboxes.filterNot { it.type == FolderType.INBOX }
+}
 
 data class Mailbox(
     val folderId: Long,

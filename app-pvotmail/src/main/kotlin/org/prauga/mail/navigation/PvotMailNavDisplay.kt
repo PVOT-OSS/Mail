@@ -18,6 +18,7 @@ import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderRole
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
 import org.prauga.mail.feature.mailboxes.MailboxesScreen
+import org.prauga.mail.feature.mailboxes.starredSearch
 import org.prauga.mail.feature.messagelist.MessageListScreen
 
 @Composable
@@ -39,6 +40,7 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit) {
                             MessageListRoute.of(title, LocalMessageSearch.createUnifiedSearch(FolderRole.INBOX)),
                         )
                     },
+                    onOpenStarredMail = { title -> backStack.add(MessageListRoute.of(title, starredSearch())) },
                     onOpenMailbox = { accountId, folderId, title ->
                         backStack.add(MessageListRoute.of(title, folderSearch(accountId, folderId)))
                     },
