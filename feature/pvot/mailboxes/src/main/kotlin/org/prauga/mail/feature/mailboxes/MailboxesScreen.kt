@@ -26,6 +26,7 @@ import com.prauga.pvot.designsystem.components.PvotScreen
 import com.prauga.pvot.designsystem.components.PvotScreenDefaults
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.button.PvotFab
+import com.prauga.pvot.designsystem.components.button.PvotFabDefaults
 import com.prauga.pvot.designsystem.components.list.PvotListGroup
 import com.prauga.pvot.designsystem.components.list.PvotListRow
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
@@ -79,7 +80,7 @@ internal fun MailboxesContent(
             state = listState,
             contentPadding = PvotScreenDefaults.contentPadding(
                 top = padding.calculateTopPadding() + PvotSpacing.S,
-                bottom = bottom + PvotSpacing.L,
+                bottom = bottom + PvotFabDefaults.Size + PvotSpacing.L * 2,
             ),
             verticalArrangement = Arrangement.spacedBy(PvotSpacing.L),
             horizontalAlignment = Alignment.Start,
