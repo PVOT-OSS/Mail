@@ -18,6 +18,12 @@
         >
 
         <activity
+            android:name="org.prauga.mail.home.PvotMailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PvotMail.DayNight"
+            />
+
+        <activity
             android:name="com.fsck.k9.ui.settings.account.OpenPgpAppSelectDialog"
             android:configChanges="locale"
             android:theme="@style/Theme.PvotMail.DayNight.Dialog.Translucent"

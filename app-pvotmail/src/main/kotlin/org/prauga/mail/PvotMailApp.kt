@@ -11,5 +11,8 @@ class PvotMailApp : FeatureFlagApplication() {
     override val appVersion: String = BuildConfig.VERSION_NAME
     override val buildType: String = BuildConfig.BUILD_TYPE
 
+    override val allowDefinitionOverride: Boolean
+        get() = true
+
     override fun provideAppModule(): Module = appModule
 }

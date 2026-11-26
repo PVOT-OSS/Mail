@@ -14,8 +14,10 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.prauga.mail.dev.developmentModuleAdditions
 import org.prauga.mail.feature.featureModule
+import org.prauga.mail.feature.mailboxes.featureMailboxesModule
 import org.prauga.mail.featureflag.pvotMailFeatureFlagModule
 import org.prauga.mail.provider.providerModule
+import org.prauga.mail.startup.startupModule
 import org.prauga.mail.widget.MessageListWidgetProvider
 import org.prauga.mail.widget.UnreadWidgetProvider
 import org.prauga.mail.widget.widgetModule
@@ -27,6 +29,8 @@ val appModule = module {
     includes(widgetModule)
     includes(featureModule)
     includes(providerModule)
+    includes(featureMailboxesModule)
+    includes(startupModule)
 
     single(named("ClientInfoAppName")) { BuildConfig.CLIENT_INFO_APP_NAME }
     single(named("ClientInfoAppVersion")) { BuildConfig.VERSION_NAME }

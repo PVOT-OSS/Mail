@@ -25,6 +25,7 @@ import com.fsck.k9.ui.helper.DisplayHtmlUiFactory
 import com.fsck.k9.view.K9WebViewClient
 import com.fsck.k9.view.MessageWebView
 import kotlin.test.Test
+import kotlinx.coroutines.CoroutineDispatcher
 import net.openid.appauth.AppAuthConfiguration
 import net.thunderbird.app.common.feature.account.AccountRemoverWorker
 import net.thunderbird.core.common.mail.html.HtmlSettings
@@ -55,6 +56,7 @@ class DependencyInjectionTest {
                 AssetManager::class,
                 Configuration::class,
                 Context::class,
+                CoroutineDispatcher::class,
                 DisplayMetrics::class,
                 InteractionMode::class,
                 NotificationManager::class,
