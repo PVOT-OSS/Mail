@@ -17,6 +17,7 @@ val featureReaderModule = module {
             htmlSettingsProvider = get(),
             accountManager = get(),
             contactRepository = get(),
+            messageListRepository = get(),
             ioDispatcher = Dispatchers.IO,
         )
     }

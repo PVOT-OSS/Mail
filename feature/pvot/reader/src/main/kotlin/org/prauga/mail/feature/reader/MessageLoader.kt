@@ -4,6 +4,7 @@
 package org.prauga.mail.feature.reader
 
 import app.k9mail.core.android.common.contact.ContactRepository
+import app.k9mail.legacy.mailstore.MessageListRepository
 import app.k9mail.legacy.message.controller.MessageReference
 import app.k9mail.legacy.message.controller.SimpleMessagingListener
 import com.fsck.k9.controller.MessagingController
@@ -25,6 +26,7 @@ import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.message.reader.api.html.MessageReaderHtmlSettingsProvider
 
 private const val DEFAULT_MIME_TYPE = "application/octet-stream"
+private const val THREAD_ORDER = "date ASC, id ASC"
 
 class MessageLoader(
     private val messagingController: MessagingController,
@@ -32,6 +34,7 @@ class MessageLoader(
     private val htmlSettingsProvider: MessageReaderHtmlSettingsProvider,
     private val accountManager: LegacyAccountManager,
     private val contactRepository: ContactRepository,
+    private val messageListRepository: MessageListRepository,
     private val ioDispatcher: CoroutineDispatcher,
 ) {
     @Suppress("TooGenericExceptionCaught")
@@ -80,6 +83,44 @@ class MessageLoader(
             Result.failure(e)
         }
     }
+
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun thread(reference: MessageReference): Result<List<ThreadEntry>> = withContext(ioDispatcher) {
+        try {
+            val message = messagingController.loadMessageMetadata(
+                reference.accountId,
+                reference.folderId,
+                reference.uid,
+            )
+            val root = message.rootId.takeIf { it > 0 } ?: message.threadId
+            val entries = messageListRepository.getThread(reference.accountId, root, THREAD_ORDER) { details ->
+                ThreadEntry(
+                    key = details.id,
+                    reference = MessageReference(reference.accountId, details.folderId, details.messageServerId),
+                    senderName = senderNameOf(details.fromAddresses),
+                    senderAddress = details.fromAddresses.firstOrNull()?.address.orEmpty(),
+                    sentAt = details.messageDate,
+                    preview = details.preview.takeIf { it.isPreviewTextAvailable }?.previewText.orEmpty(),
+                    isUnread = !details.isRead,
+                )
+            }
+            Result.success(entries.ifEmpty { listOf(singleEntry(reference, message)) })
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun singleEntry(reference: MessageReference, message: LocalMessage) = ThreadEntry(
+        key = message.databaseId,
+        reference = reference,
+        senderName = senderNameOf(message.from.orEmpty().toList()),
+        senderAddress = message.from?.firstOrNull()?.address.orEmpty(),
+        sentAt = message.sentDate?.time ?: 0L,
+        preview = "",
+        isUnread = !message.isSet(Flag.SEEN),
+    )
 
     private fun loadsImagesFrom(reference: MessageReference, sender: String?): Boolean =
         when (accountManager.findById(reference.accountId)?.showPictures) {

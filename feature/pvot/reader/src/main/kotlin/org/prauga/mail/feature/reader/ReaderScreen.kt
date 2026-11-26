@@ -3,15 +3,12 @@
 
 package org.prauga.mail.feature.reader
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -25,22 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.coreui.PvotLoadingContent
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.PvotSnackbarHost
-import com.prauga.pvot.designsystem.components.list.PvotAvatar
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.theme.PvotSpacing
-import java.text.DateFormat
-import java.util.Date
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-private val AvatarSize = 44.dp
 
 @Composable
 fun ReaderScreen(
@@ -66,73 +57,64 @@ fun ReaderScreen(
         snackbarHost = { PvotSnackbarHost(snackbarHostState) },
         topBar = { PvotTopBar(title = "", onBack = onBack, compact = true) },
     ) { padding ->
-        when (val current = state) {
-            ReaderUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when {
+            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 PvotLoadingContent()
             }
 
-            ReaderUiState.Failed -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            state.failed -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 PvotEmptyContent(message = stringResource(R.string.reader_failed))
             }
 
-            is ReaderUiState.Loaded -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding()),
-            ) {
-                ReaderHeader(current.message)
-                if (current.message.hasRemoteImages && !current.showRemoteImages) {
-                    RemoteImagesBar(onLoad = viewModel::loadRemoteImages)
-                }
-                ReaderBody(
-                    message = current.message,
-                    showRemoteImages = current.showRemoteImages,
+            else -> Conversation(
+                state = state,
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding() + PvotSpacing.L,
+                ),
+                actions = ConversationActions(
+                    onToggle = viewModel::toggle,
+                    onLoadRemoteImages = viewModel::loadRemoteImages,
+                    onOpenAttachment = viewModel::openAttachment,
                     onSuspiciousLink = { url, link -> linkToCheck = url to link },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                ReaderAttachments(attachments = current.message.attachments, onOpen = viewModel::openAttachment)
-            }
+                ),
+            )
         }
     }
 }
 
+internal class ConversationActions(
+    val onToggle: (ThreadEntry) -> Unit,
+    val onLoadRemoteImages: (ThreadEntry) -> Unit,
+    val onOpenAttachment: (ThreadEntry, ReaderAttachment) -> Unit,
+    val onSuspiciousLink: (String, SuspiciousLink) -> Unit,
+)
+
 @Composable
-private fun ReaderHeader(message: ReaderMessage) {
-    Column(Modifier.padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S)) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(PvotSpacing.M),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            PvotAvatar(name = message.senderName, colorKey = message.senderAddress, size = AvatarSize)
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = message.senderName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                if (message.recipients.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.reader_to, message.recipients),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                }
-            }
+private fun Conversation(state: ReaderUiState, contentPadding: PaddingValues, actions: ConversationActions) {
+    val canCollapse = state.entries.size > 1
+    LazyColumn(contentPadding = contentPadding) {
+        item(key = "subject") {
             Text(
-                text = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(message.sentAt)),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = state.subject?.ifBlank { null } ?: stringResource(R.string.reader_no_subject),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S),
             )
         }
-        Text(
-            text = message.subject.ifBlank { stringResource(R.string.reader_no_subject) },
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = PvotSpacing.M),
-        )
+        items(state.entries, key = { it.key }) { entry ->
+            if (entry.key in state.expanded) {
+                ExpandedMessage(
+                    entry = entry,
+                    message = state.messages[entry.key],
+                    showRemoteImages = entry.key in state.remoteImagesShown,
+                    canCollapse = canCollapse,
+                    actions = actions,
+                )
+            } else {
+                CollapsedMessage(entry = entry, onClick = { actions.onToggle(entry) })
+            }
+        }
     }
 }

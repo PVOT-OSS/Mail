@@ -7,6 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.k9mail.legacy.message.controller.MessageReference
 import com.fsck.k9.controller.MessagingControllerWrapper
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +30,16 @@ sealed interface ReaderEffect {
     data object AttachmentFailed : ReaderEffect
 }
 
-sealed interface ReaderUiState {
-    data object Loading : ReaderUiState
-    data class Loaded(val message: ReaderMessage, val showRemoteImages: Boolean) : ReaderUiState
-    data object Failed : ReaderUiState
+data class ReaderUiState(
+    val isLoading: Boolean = true,
+    val failed: Boolean = false,
+    val entries: ImmutableList<ThreadEntry> = persistentListOf(),
+    val expanded: ImmutableSet<Long> = persistentSetOf(),
+    val messages: ImmutableMap<Long, ReaderMessage> = persistentMapOf(),
+    val remoteImagesShown: ImmutableSet<Long> = persistentSetOf(),
+) {
+    val subject: String?
+        get() = messages.values.firstOrNull()?.subject
 }
 
 class ReaderViewModel(
@@ -34,36 +49,68 @@ class ReaderViewModel(
     private val attachmentOpener: AttachmentOpener,
 ) : ViewModel() {
 
+    private val mutableState = MutableStateFlow(ReaderUiState())
+    val state: StateFlow<ReaderUiState> = mutableState.asStateFlow()
+
     private val effectChannel = Channel<ReaderEffect>(Channel.BUFFERED)
     val effects: Flow<ReaderEffect> = effectChannel.receiveAsFlow()
 
-    fun loadRemoteImages() {
-        mutableState.update { state ->
-            if (state is ReaderUiState.Loaded) state.copy(showRemoteImages = true) else state
-        }
-    }
-
-    fun openAttachment(attachment: ReaderAttachment) {
-        viewModelScope.launch {
-            if (!attachmentOpener.open(reference, attachment)) effectChannel.send(ReaderEffect.AttachmentFailed)
-        }
-    }
-
-    private val mutableState = MutableStateFlow<ReaderUiState>(ReaderUiState.Loading)
-    val state: StateFlow<ReaderUiState> = mutableState.asStateFlow()
-
     init {
         viewModelScope.launch {
-            val result = loader.load(reference)
-            mutableState.value = result.fold(
-                onSuccess = { message ->
-                    if (message.isUnread) {
-                        messagingController.setFlag(reference.accountId, listOf(message.databaseId), Flag.SEEN, true)
+            loader.thread(reference).fold(
+                onSuccess = { entries ->
+                    val expanded = entries.initiallyExpanded(reference)
+                    mutableState.update {
+                        it.copy(
+                            isLoading = false,
+                            entries = entries.toImmutableList(),
+                            expanded = expanded.toImmutableSet(),
+                        )
                     }
-                    ReaderUiState.Loaded(message, showRemoteImages = message.loadRemoteImages)
+                    entries.filter { it.key in expanded }.forEach { loadBody(it) }
                 },
-                onFailure = { ReaderUiState.Failed },
+                onFailure = { mutableState.update { it.copy(isLoading = false, failed = true) } },
             )
+        }
+    }
+
+    fun toggle(entry: ThreadEntry) {
+        val isExpanded = entry.key in mutableState.value.expanded
+        mutableState.update { state ->
+            val expanded = if (isExpanded) state.expanded - entry.key else state.expanded + entry.key
+            state.copy(expanded = expanded.toImmutableSet())
+        }
+        if (!isExpanded) loadBody(entry)
+    }
+
+    fun loadRemoteImages(entry: ThreadEntry) {
+        mutableState.update { it.copy(remoteImagesShown = (it.remoteImagesShown + entry.key).toImmutableSet()) }
+    }
+
+    fun openAttachment(entry: ThreadEntry, attachment: ReaderAttachment) {
+        viewModelScope.launch {
+            if (!attachmentOpener.open(entry.reference, attachment)) effectChannel.send(ReaderEffect.AttachmentFailed)
+        }
+    }
+
+    private fun loadBody(entry: ThreadEntry) {
+        if (entry.key in mutableState.value.messages) return
+        viewModelScope.launch {
+            loader.load(entry.reference).onSuccess { message ->
+                if (message.isUnread) {
+                    messagingController.setFlag(entry.reference.accountId, listOf(message.databaseId), Flag.SEEN, true)
+                }
+                mutableState.update { state ->
+                    state.copy(
+                        messages = (state.messages + (entry.key to message)).toImmutableMap(),
+                        remoteImagesShown = if (message.loadRemoteImages) {
+                            (state.remoteImagesShown + entry.key).toImmutableSet()
+                        } else {
+                            state.remoteImagesShown
+                        },
+                    )
+                }
+            }
         }
     }
 }

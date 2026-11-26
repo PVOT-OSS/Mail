@@ -23,6 +23,7 @@ dependencies {
     implementation(projects.feature.account.api)
     implementation(projects.feature.mail.message.reader.api)
     implementation(projects.legacy.core)
+    implementation(projects.legacy.mailstore)
     implementation(projects.legacy.message)
     implementation(projects.legacy.ui.legacy)
     implementation(projects.mail.common)
