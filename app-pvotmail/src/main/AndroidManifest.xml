@@ -19,6 +19,7 @@
 
         <activity
             android:name="org.prauga.mail.home.PvotMailActivity"
+            android:enableOnBackInvokedCallback="true"
             android:exported="false"
             android:theme="@style/Theme.PvotMail.DayNight"
             />

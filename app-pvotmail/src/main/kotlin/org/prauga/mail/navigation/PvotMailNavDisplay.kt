@@ -14,6 +14,7 @@ import androidx.navigation3.ui.NavDisplay
 import app.k9mail.legacy.message.controller.MessageReference
 import com.fsck.k9.activity.MessageHomeActivity
 import com.fsck.k9.activity.compose.MessageActions
+import com.prauga.pvot.designsystem.motion.PvotPageTransitions
 import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.folder.FolderRole
 import net.thunderbird.feature.search.legacy.LocalMessageSearch
@@ -32,6 +33,9 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = { PvotPageTransitions.push() },
+        popTransitionSpec = { PvotPageTransitions.pop() },
+        predictivePopTransitionSpec = { PvotPageTransitions.pop() },
         entryProvider = entryProvider {
             entry<MailboxesRoute> {
                 MailboxesScreen(
