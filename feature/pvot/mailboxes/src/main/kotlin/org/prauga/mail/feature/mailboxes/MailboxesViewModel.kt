@@ -68,6 +68,7 @@ class MailboxesViewModel(
                 name = displayFolder.folder.name,
                 type = displayFolder.folder.type,
                 unread = displayFolder.unreadMessageCount,
+                pathDelimiter = displayFolder.pathDelimiter,
             )
         }.inMailboxOrder(),
     )

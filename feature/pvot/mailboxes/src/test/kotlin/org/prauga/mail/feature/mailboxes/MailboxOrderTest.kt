@@ -5,6 +5,7 @@ package org.prauga.mail.feature.mailboxes
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import assertk.assertions.isEqualTo
 import kotlin.test.Test
 import net.thunderbird.feature.mail.folder.FolderType
 
@@ -28,4 +29,18 @@ class MailboxOrderTest {
 
     private fun mailbox(name: String, type: FolderType) =
         Mailbox(folderId = name.hashCode().toLong(), name = name, type = type, unread = 0)
+
+    @Test
+    fun `nested folders show their last path segment and their depth`() {
+        val testSubject = Mailbox(
+            folderId = 1,
+            name = "Work/Clients/Acme",
+            type = FolderType.REGULAR,
+            unread = 0,
+            pathDelimiter = "/",
+        )
+
+        assertThat(testSubject.displayName).isEqualTo("Acme")
+        assertThat(testSubject.depth).isEqualTo(2)
+    }
 }

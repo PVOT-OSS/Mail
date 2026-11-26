@@ -22,4 +22,11 @@ data class Mailbox(
     val name: String,
     val type: FolderType,
     val unread: Int,
-)
+    val pathDelimiter: String = "",
+) {
+    val displayName: String
+        get() = if (pathDelimiter.isEmpty()) name else name.substringAfterLast(pathDelimiter)
+
+    val depth: Int
+        get() = if (pathDelimiter.isEmpty()) 0 else name.split(pathDelimiter).size - 1
+}

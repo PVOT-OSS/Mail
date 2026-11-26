@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -126,7 +128,8 @@ private fun LazyListScope.mailboxItems(
             account.mailboxes.forEach { mailbox ->
                 item {
                     MailboxRow(
-                        title = mailbox.name,
+                        title = mailbox.displayName,
+                        depth = mailbox.depth,
                         icon = mailbox.type.icon(),
                         unread = mailbox.unread,
                         onClick = { onOpenMailbox(account.accountId, mailbox.folderId) },
@@ -143,6 +146,7 @@ private fun MailboxRow(
     @DrawableRes icon: Int,
     unread: Int,
     onClick: () -> Unit,
+    depth: Int = 0,
 ) {
     PvotListRow(
         title = title,
@@ -151,6 +155,7 @@ private fun MailboxRow(
                 painter = painterResource(icon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = PvotSpacing.L * depth),
             )
         },
         trailing = if (unread > 0) {
