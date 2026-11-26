@@ -49,11 +49,14 @@ abstract class BaseApplication : Application(), WorkManagerConfiguration.Provide
     private val appCoroutineScope: CoroutineScope = MainScope()
     private var appLanguageManagerInitialized = false
 
+    protected open val allowDefinitionOverride: Boolean
+        get() = false
+
     override fun attachBaseContext(base: Context?) {
         Core.earlyInit()
 
         // Start Koin early so it is ready by the time content providers are initialized.
-        DI.start(this, listOf(provideAppModule()))
+        DI.start(this, listOf(provideAppModule()), allowOverride = allowDefinitionOverride)
         Log.logger = logger
 
         super.attachBaseContext(base)
