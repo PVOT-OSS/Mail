@@ -90,6 +90,7 @@ include(
 
 include(":app-pvotmail")
 include(":feature:pvot:mailboxes")
+include(":feature:pvot:messagelist")
 
 includeBuild("PvotLib")
 

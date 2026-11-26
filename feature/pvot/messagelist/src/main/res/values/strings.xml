@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <string name="messagelist_empty">No messages</string>
+    <string name="messagelist_action_archive">Archive</string>
+    <string name="messagelist_action_mark_read">Read</string>
+    <string name="messagelist_action_mark_unread">Unread</string>
+    <string name="messagelist_unread">Unread</string>
+    <string name="messagelist_starred">Starred</string>
+    <string name="messagelist_has_attachments">Has attachments</string>
+</resources>
