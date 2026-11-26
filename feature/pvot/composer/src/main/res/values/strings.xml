@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <string name="composer_title">New Message</string>
+    <string name="composer_close">Close</string>
+    <string name="composer_send">Send</string>
+    <string name="composer_to">To:</string>
+    <string name="composer_cc">Cc:</string>
+    <string name="composer_bcc">Bcc:</string>
+    <string name="composer_from">From:</string>
+    <string name="composer_subject">Subject:</string>
+    <string name="composer_cc_bcc_from">Cc/Bcc, From: %1$s</string>
+    <string name="composer_choose_from">Choose the sender</string>
+    <string name="composer_send_failed">Couldn\'t send the message</string>
+</resources>
