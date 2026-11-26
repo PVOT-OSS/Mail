@@ -16,6 +16,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.pvot.mailactions)
     implementation(projects.core.android.account)
     implementation(projects.core.android.common)
     implementation(projects.core.android.webkit)

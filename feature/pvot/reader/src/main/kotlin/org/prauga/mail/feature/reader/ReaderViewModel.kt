@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.thunderbird.core.common.mail.Flag
+import org.prauga.mail.core.mailactions.MailActionKind
+import org.prauga.mail.core.mailactions.PendingMailActions
 
 sealed interface ReaderEffect {
     data object AttachmentFailed : ReaderEffect
@@ -49,6 +51,7 @@ class ReaderViewModel(
     private val loader: MessageLoader,
     private val messagingController: MessagingControllerWrapper,
     private val attachmentOpener: AttachmentOpener,
+    private val pendingActions: PendingMailActions,
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(ReaderUiState())
@@ -95,9 +98,17 @@ class ReaderViewModel(
         }
     }
 
-    fun archive() = closeAfter { messagingController.archiveMessages(it.map(ThreadEntry::reference)) }
+    fun archive() = closeAfter { entries ->
+        val references = entries.map(ThreadEntry::reference)
+        pendingActions.add(MailActionKind.ARCHIVE, entries.keys()) { messagingController.archiveMessages(references) }
+    }
 
-    fun delete() = closeAfter { messagingController.deleteMessages(it.map(ThreadEntry::reference)) }
+    fun delete() = closeAfter { entries ->
+        val references = entries.map(ThreadEntry::reference)
+        pendingActions.add(MailActionKind.DELETE, entries.keys()) { messagingController.deleteMessages(references) }
+    }
+
+    private fun List<ThreadEntry>.keys(): Set<Long> = mapTo(HashSet(), ThreadEntry::key)
 
     fun markUnread() = closeAfter { entries ->
         val newest = entries.last()

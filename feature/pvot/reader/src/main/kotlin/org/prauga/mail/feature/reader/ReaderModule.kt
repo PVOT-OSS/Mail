@@ -30,6 +30,12 @@ val featureReaderModule = module {
         )
     }
     viewModel { (reference: MessageReference) ->
-        ReaderViewModel(reference = reference, loader = get(), messagingController = get(), attachmentOpener = get())
+        ReaderViewModel(
+            reference = reference,
+            loader = get(),
+            messagingController = get(),
+            attachmentOpener = get(),
+            pendingActions = get(),
+        )
     }
 }
