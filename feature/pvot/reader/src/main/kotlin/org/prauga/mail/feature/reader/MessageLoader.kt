@@ -3,9 +3,11 @@
 
 package org.prauga.mail.feature.reader
 
+import app.k9mail.core.android.common.contact.ContactRepository
 import app.k9mail.legacy.message.controller.MessageReference
 import app.k9mail.legacy.message.controller.SimpleMessagingListener
 import com.fsck.k9.controller.MessagingController
+import com.fsck.k9.helper.Utility
 import com.fsck.k9.mail.Message.RecipientType
 import com.fsck.k9.mailstore.LocalMessage
 import com.fsck.k9.mailstore.MessageViewInfoExtractorFactory
@@ -15,7 +17,10 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import net.thunderbird.core.android.account.LegacyAccountManager
+import net.thunderbird.core.android.account.ShowPictures
 import net.thunderbird.core.common.mail.Flag
+import net.thunderbird.core.common.mail.toEmailAddressOrNull
 import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.message.reader.api.html.MessageReaderHtmlSettingsProvider
 
@@ -25,6 +30,8 @@ class MessageLoader(
     private val messagingController: MessagingController,
     private val extractorFactory: MessageViewInfoExtractorFactory,
     private val htmlSettingsProvider: MessageReaderHtmlSettingsProvider,
+    private val accountManager: LegacyAccountManager,
+    private val contactRepository: ContactRepository,
     private val ioDispatcher: CoroutineDispatcher,
 ) {
     @Suppress("TooGenericExceptionCaught")
@@ -62,6 +69,8 @@ class MessageLoader(
                     }.toImmutableList(),
                     isUnread = !message.isSet(Flag.SEEN),
                     isStarred = message.isSet(Flag.FLAGGED),
+                    hasRemoteImages = Utility.hasExternalImages(viewInfo.text.orEmpty()),
+                    loadRemoteImages = loadsImagesFrom(reference, message.from?.firstOrNull()?.address),
                 ),
             )
         } catch (e: CancellationException) {
@@ -70,6 +79,16 @@ class MessageLoader(
             Result.failure(e)
         }
     }
+
+    private fun loadsImagesFrom(reference: MessageReference, sender: String?): Boolean =
+        when (accountManager.findById(reference.accountId)?.showPictures) {
+            ShowPictures.ALWAYS -> true
+
+            ShowPictures.ONLY_FROM_CONTACTS ->
+                sender?.toEmailAddressOrNull()?.let { contactRepository.hasContactFor(it) } == true
+
+            ShowPictures.NEVER, null -> false
+        }
 
     private fun loadLocal(reference: MessageReference): LocalMessage =
         messagingController.loadMessage(reference.accountId, reference.folderId, reference.uid)

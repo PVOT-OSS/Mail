@@ -17,6 +17,7 @@ android {
 
 dependencies {
     implementation(projects.core.android.account)
+    implementation(projects.core.android.common)
     implementation(projects.core.android.webkit)
     implementation(projects.core.common)
     implementation(projects.feature.account.api)

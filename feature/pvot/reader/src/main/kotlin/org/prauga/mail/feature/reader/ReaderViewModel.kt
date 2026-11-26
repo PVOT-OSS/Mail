@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.thunderbird.core.common.mail.Flag
 
@@ -22,7 +23,7 @@ sealed interface ReaderEffect {
 
 sealed interface ReaderUiState {
     data object Loading : ReaderUiState
-    data class Loaded(val message: ReaderMessage) : ReaderUiState
+    data class Loaded(val message: ReaderMessage, val showRemoteImages: Boolean) : ReaderUiState
     data object Failed : ReaderUiState
 }
 
@@ -35,6 +36,12 @@ class ReaderViewModel(
 
     private val effectChannel = Channel<ReaderEffect>(Channel.BUFFERED)
     val effects: Flow<ReaderEffect> = effectChannel.receiveAsFlow()
+
+    fun loadRemoteImages() {
+        mutableState.update { state ->
+            if (state is ReaderUiState.Loaded) state.copy(showRemoteImages = true) else state
+        }
+    }
 
     fun openAttachment(attachment: ReaderAttachment) {
         viewModelScope.launch {
@@ -53,7 +60,7 @@ class ReaderViewModel(
                     if (message.isUnread) {
                         messagingController.setFlag(reference.accountId, listOf(message.databaseId), Flag.SEEN, true)
                     }
-                    ReaderUiState.Loaded(message)
+                    ReaderUiState.Loaded(message, showRemoteImages = message.loadRemoteImages)
                 },
                 onFailure = { ReaderUiState.Failed },
             )

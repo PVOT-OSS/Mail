@@ -14,6 +14,7 @@ import org.koin.compose.koinInject
 @Composable
 internal fun ReaderBody(
     message: ReaderMessage,
+    showRemoteImages: Boolean,
     modifier: Modifier = Modifier,
     webViewConfigProvider: WebViewConfigProvider = koinInject(),
 ) {
@@ -23,10 +24,10 @@ internal fun ReaderBody(
             MessageWebView(context).apply {
                 configure(webViewConfigProvider.createForMessageView())
                 setBackgroundColor(Color.TRANSPARENT)
-                blockNetworkData(true)
             }
         },
         update = { webView ->
+            webView.blockNetworkData(!showRemoteImages)
             webView.displayHtmlContentWithInlineAttachments(message.html, message.attachmentResolver, null)
         },
         onRelease = { webView -> webView.destroy() },

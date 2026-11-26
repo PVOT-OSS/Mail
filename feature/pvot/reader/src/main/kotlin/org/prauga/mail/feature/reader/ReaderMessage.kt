@@ -21,6 +21,8 @@ data class ReaderMessage(
     val attachments: ImmutableList<ReaderAttachment>,
     val isUnread: Boolean,
     val isStarred: Boolean,
+    val hasRemoteImages: Boolean,
+    val loadRemoteImages: Boolean,
 )
 
 data class ReaderAttachment(

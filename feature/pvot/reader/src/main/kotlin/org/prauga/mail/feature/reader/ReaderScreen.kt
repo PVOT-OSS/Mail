@@ -78,7 +78,10 @@ fun ReaderScreen(
                     .padding(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding()),
             ) {
                 ReaderHeader(current.message)
-                ReaderBody(current.message, Modifier.fillMaxWidth())
+                if (current.message.hasRemoteImages && !current.showRemoteImages) {
+                    RemoteImagesBar(onLoad = viewModel::loadRemoteImages)
+                }
+                ReaderBody(current.message, current.showRemoteImages, Modifier.fillMaxWidth())
                 ReaderAttachments(attachments = current.message.attachments, onOpen = viewModel::openAttachment)
             }
         }

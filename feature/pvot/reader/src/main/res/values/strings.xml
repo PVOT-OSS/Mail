@@ -7,6 +7,8 @@
     <string name="reader_to">To: %1$s</string>
     <string name="reader_no_subject">(No subject)</string>
     <string name="reader_failed">Couldn\'t open this message</string>
+    <string name="reader_remote_images_blocked">Remote images are blocked to protect your privacy.</string>
+    <string name="reader_load_images">Load images</string>
     <string name="reader_attachments">Attachments</string>
     <string name="reader_attachment_failed">Couldn\'t open this attachment</string>
 </resources>
