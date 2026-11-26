@@ -3,17 +3,18 @@
 
 package org.prauga.mail.feature.messagelist
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
@@ -33,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.coreui.PvotLoadingContent
+import com.prauga.pvot.designsystem.components.PvotGlassIconButton
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.PvotSnackbarHost
 import com.prauga.pvot.designsystem.components.list.PvotSwipeAction
@@ -51,6 +53,7 @@ fun MessageListScreen(
     title: String,
     subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
+    onNewMessage: () -> Unit,
     onBack: (() -> Unit)?,
     viewModel: MessageListViewModel = koinViewModel(key = title) { parametersOf(search) },
 ) {
@@ -85,6 +88,7 @@ fun MessageListScreen(
         title = title,
         subtitle = subtitle,
         onOpenMessage = onOpenMessage,
+        onNewMessage = onNewMessage,
         onBack = onBack,
         onEvent = viewModel::onEvent,
     )
@@ -97,18 +101,19 @@ internal fun MessageListContent(
     title: String,
     subtitle: String?,
     onOpenMessage: (MessageReference) -> Unit,
+    onNewMessage: () -> Unit,
     onBack: (() -> Unit)?,
     onEvent: (MessageListEvent) -> Unit,
 ) {
     val listState = rememberLazyListState()
     val compact = rememberPvotTopBarCompact(listState)
-    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     PvotScreenScaffold(
         topBar = { PvotTopBar(title = title, onBack = onBack, compact = compact, subtitle = subtitle) },
+        bottomBar = { MessageListBottomBar(onNewMessage = onNewMessage) },
         snackbarHost = {
             PvotSnackbarHost(
                 hostState = snackbarHostState,
-                modifier = Modifier.navigationBarsPadding().padding(horizontal = PvotSpacing.M),
+                modifier = Modifier.padding(horizontal = PvotSpacing.M),
             )
         },
     ) { padding ->
@@ -124,7 +129,7 @@ internal fun MessageListContent(
                     state = listState,
                     contentPadding = PaddingValues(
                         top = padding.calculateTopPadding() + PvotSpacing.S,
-                        bottom = bottom + PvotSpacing.L,
+                        bottom = padding.calculateBottomPadding() + PvotSpacing.L,
                     ),
                 ) {
                     items(state.rows, key = { it.key }) { row ->
@@ -137,6 +142,24 @@ internal fun MessageListContent(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MessageListBottomBar(onNewMessage: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = PvotSpacing.L, vertical = PvotSpacing.S),
+        horizontalArrangement = Arrangement.End,
+    ) {
+        PvotGlassIconButton(onClick = onNewMessage) {
+            Icon(
+                painter = painterResource(R.drawable.messagelist_ic_edit),
+                contentDescription = stringResource(R.string.messagelist_new_message),
+            )
         }
     }
 }

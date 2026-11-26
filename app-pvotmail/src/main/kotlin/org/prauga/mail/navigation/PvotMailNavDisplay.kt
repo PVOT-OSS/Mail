@@ -83,6 +83,7 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
                     title = route.title,
                     subtitle = route.subtitle,
                     onOpenMessage = { reference -> openMessage(context, reference) },
+                    onNewMessage = { MessageActions.actionCompose(context) },
                     onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
                 )
             }

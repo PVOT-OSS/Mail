@@ -11,6 +11,7 @@
     <string name="messagelist_action_mark_unread">Unread</string>
     <string name="messagelist_archived">Archived</string>
     <string name="messagelist_undo">Undo</string>
+    <string name="messagelist_new_message">New message</string>
     <string name="messagelist_unread">Unread</string>
     <string name="messagelist_starred">Starred</string>
     <string name="messagelist_has_attachments">Has attachments</string>
