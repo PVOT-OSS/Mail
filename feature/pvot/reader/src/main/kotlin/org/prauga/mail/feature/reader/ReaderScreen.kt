@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,6 +29,7 @@ import app.k9mail.legacy.message.controller.MessageReference
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.coreui.PvotLoadingContent
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
+import com.prauga.pvot.designsystem.components.PvotSnackbarHost
 import com.prauga.pvot.designsystem.components.list.PvotAvatar
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.theme.PvotSpacing
@@ -44,8 +48,18 @@ fun ReaderScreen(
     viewModel: ReaderViewModel = koinViewModel { parametersOf(reference) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val attachmentFailed = stringResource(R.string.reader_attachment_failed)
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                ReaderEffect.AttachmentFailed -> snackbarHostState.showSnackbar(attachmentFailed)
+            }
+        }
+    }
     PvotScreenScaffold(
         modifier = modifier,
+        snackbarHost = { PvotSnackbarHost(snackbarHostState) },
         topBar = { PvotTopBar(title = "", onBack = onBack, compact = true) },
     ) { padding ->
         when (val current = state) {
@@ -65,6 +79,7 @@ fun ReaderScreen(
             ) {
                 ReaderHeader(current.message)
                 ReaderBody(current.message, Modifier.fillMaxWidth())
+                ReaderAttachments(attachments = current.message.attachments, onOpen = viewModel::openAttachment)
             }
         }
     }

@@ -11,12 +11,15 @@ import com.fsck.k9.mailstore.LocalMessage
 import com.fsck.k9.mailstore.MessageViewInfoExtractorFactory
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import net.thunderbird.core.common.mail.Flag
 import net.thunderbird.feature.account.AccountId
 import net.thunderbird.feature.mail.message.reader.api.html.MessageReaderHtmlSettingsProvider
+
+private const val DEFAULT_MIME_TYPE = "application/octet-stream"
 
 class MessageLoader(
     private val messagingController: MessagingController,
@@ -47,7 +50,16 @@ class MessageLoader(
                     sentAt = message.sentDate?.time ?: message.internalDate?.time ?: 0L,
                     html = viewInfo.text.orEmpty(),
                     attachmentResolver = viewInfo.attachmentResolver,
-                    attachmentNames = viewInfo.attachments.orEmpty().mapNotNull { it.displayName },
+                    attachments = viewInfo.attachments.orEmpty().filterNot { it.inlineAttachment }.map { attachment ->
+                        ReaderAttachment(
+                            name = attachment.displayName.orEmpty(),
+                            size = attachment.size,
+                            mimeType = attachment.mimeType ?: DEFAULT_MIME_TYPE,
+                            internalUri = attachment.internalUri,
+                            isDownloaded = attachment.isContentAvailable,
+                            part = attachment.part,
+                        )
+                    }.toImmutableList(),
                     isUnread = !message.isSet(Flag.SEEN),
                     isStarred = message.isSet(Flag.FLAGGED),
                 ),

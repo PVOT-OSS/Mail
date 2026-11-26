@@ -8,4 +8,5 @@
     <string name="reader_no_subject">(No subject)</string>
     <string name="reader_failed">Couldn\'t open this message</string>
     <string name="reader_attachments">Attachments</string>
+    <string name="reader_attachment_failed">Couldn\'t open this attachment</string>
 </resources>

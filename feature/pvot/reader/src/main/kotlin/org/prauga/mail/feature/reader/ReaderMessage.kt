@@ -3,8 +3,11 @@
 
 package org.prauga.mail.feature.reader
 
+import android.net.Uri
 import com.fsck.k9.mail.Address
+import com.fsck.k9.mail.Part
 import com.fsck.k9.mailstore.AttachmentResolver
+import kotlinx.collections.immutable.ImmutableList
 
 data class ReaderMessage(
     val databaseId: Long,
@@ -15,9 +18,18 @@ data class ReaderMessage(
     val sentAt: Long,
     val html: String,
     val attachmentResolver: AttachmentResolver?,
-    val attachmentNames: List<String>,
+    val attachments: ImmutableList<ReaderAttachment>,
     val isUnread: Boolean,
     val isStarred: Boolean,
+)
+
+data class ReaderAttachment(
+    val name: String,
+    val size: Long,
+    val mimeType: String,
+    val internalUri: Uri,
+    val isDownloaded: Boolean,
+    val part: Part?,
 )
 
 internal fun senderNameOf(from: List<Address>): String =

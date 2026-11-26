@@ -5,6 +5,7 @@ package org.prauga.mail.feature.reader
 
 import app.k9mail.legacy.message.controller.MessageReference
 import kotlinx.coroutines.Dispatchers
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -17,7 +18,15 @@ val featureReaderModule = module {
             ioDispatcher = Dispatchers.IO,
         )
     }
+    factory {
+        AttachmentOpener(
+            context = androidContext(),
+            messagingController = get(),
+            logger = get(),
+            ioDispatcher = Dispatchers.IO,
+        )
+    }
     viewModel { (reference: MessageReference) ->
-        ReaderViewModel(reference = reference, loader = get(), messagingController = get())
+        ReaderViewModel(reference = reference, loader = get(), messagingController = get(), attachmentOpener = get())
     }
 }

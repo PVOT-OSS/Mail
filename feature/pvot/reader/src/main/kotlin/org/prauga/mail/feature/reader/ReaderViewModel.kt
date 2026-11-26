@@ -7,11 +7,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.k9mail.legacy.message.controller.MessageReference
 import com.fsck.k9.controller.MessagingControllerWrapper
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import net.thunderbird.core.common.mail.Flag
+
+sealed interface ReaderEffect {
+    data object AttachmentFailed : ReaderEffect
+}
 
 sealed interface ReaderUiState {
     data object Loading : ReaderUiState
@@ -23,7 +30,17 @@ class ReaderViewModel(
     private val reference: MessageReference,
     private val loader: MessageLoader,
     private val messagingController: MessagingControllerWrapper,
+    private val attachmentOpener: AttachmentOpener,
 ) : ViewModel() {
+
+    private val effectChannel = Channel<ReaderEffect>(Channel.BUFFERED)
+    val effects: Flow<ReaderEffect> = effectChannel.receiveAsFlow()
+
+    fun openAttachment(attachment: ReaderAttachment) {
+        viewModelScope.launch {
+            if (!attachmentOpener.open(reference, attachment)) effectChannel.send(ReaderEffect.AttachmentFailed)
+        }
+    }
 
     private val mutableState = MutableStateFlow<ReaderUiState>(ReaderUiState.Loading)
     val state: StateFlow<ReaderUiState> = mutableState.asStateFlow()
