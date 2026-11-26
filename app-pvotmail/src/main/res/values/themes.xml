@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="Theme.PvotMail.Base.Light" parent="Theme2.Main.Light">
+        <item name="colorPrimary">@color/pvot_primary_light</item>
+        <item name="colorOnPrimary">@color/pvot_on_primary_light</item>
+        <item name="colorPrimaryContainer">@color/pvot_primary_container_light</item>
+        <item name="colorOnPrimaryContainer">@color/pvot_on_primary_container_light</item>
+        <item name="colorSecondary">@color/pvot_secondary_light</item>
+        <item name="colorOnSecondary">@color/pvot_on_secondary_light</item>
+        <item name="colorSecondaryContainer">@color/pvot_secondary_container_light</item>
+        <item name="colorOnSecondaryContainer">@color/pvot_on_secondary_container_light</item>
+        <item name="colorTertiary">@color/pvot_tertiary_light</item>
+        <item name="colorOnTertiary">@color/pvot_on_tertiary_light</item>
+        <item name="colorTertiaryContainer">@color/pvot_tertiary_container_light</item>
+        <item name="colorOnTertiaryContainer">@color/pvot_on_tertiary_container_light</item>
+        <item name="colorError">@color/pvot_error_light</item>
+        <item name="colorOnError">@color/pvot_on_error_light</item>
+        <item name="colorErrorContainer">@color/pvot_error_container_light</item>
+        <item name="colorOnErrorContainer">@color/pvot_on_error_container_light</item>
+        <item name="android:colorBackground">@color/pvot_background_light</item>
+        <item name="colorOnBackground">@color/pvot_on_background_light</item>
+        <item name="colorSurface">@color/pvot_surface_light</item>
+        <item name="colorOnSurface">@color/pvot_on_surface_light</item>
+        <item name="colorSurfaceVariant">@color/pvot_surface_variant_light</item>
+        <item name="colorOnSurfaceVariant">@color/pvot_on_surface_variant_light</item>
+        <item name="colorOutline">@color/pvot_outline_light</item>
+        <item name="colorOutlineVariant">@color/pvot_outline_variant_light</item>
+        <item name="colorSurfaceInverse">@color/pvot_inverse_surface_light</item>
+        <item name="colorOnSurfaceInverse">@color/pvot_inverse_on_surface_light</item>
+        <item name="colorPrimaryInverse">@color/pvot_inverse_primary_light</item>
+        <item name="appLogo">@drawable/ic_app_logo</item>
+    </style>
+
+    <style name="Theme.PvotMail.Base.Dark" parent="Theme2.Main.Dark">
+        <item name="colorPrimary">@color/pvot_primary_dark</item>
+        <item name="colorOnPrimary">@color/pvot_on_primary_dark</item>
+        <item name="colorPrimaryContainer">@color/pvot_primary_container_dark</item>
+        <item name="colorOnPrimaryContainer">@color/pvot_on_primary_container_dark</item>
+        <item name="colorSecondary">@color/pvot_secondary_dark</item>
+        <item name="colorOnSecondary">@color/pvot_on_secondary_dark</item>
+        <item name="colorSecondaryContainer">@color/pvot_secondary_container_dark</item>
+        <item name="colorOnSecondaryContainer">@color/pvot_on_secondary_container_dark</item>
+        <item name="colorTertiary">@color/pvot_tertiary_dark</item>
+        <item name="colorOnTertiary">@color/pvot_on_tertiary_dark</item>
+        <item name="colorTertiaryContainer">@color/pvot_tertiary_container_dark</item>
+        <item name="colorOnTertiaryContainer">@color/pvot_on_tertiary_container_dark</item>
+        <item name="colorError">@color/pvot_error_dark</item>
+        <item name="colorOnError">@color/pvot_on_error_dark</item>
+        <item name="colorErrorContainer">@color/pvot_error_container_dark</item>
+        <item name="colorOnErrorContainer">@color/pvot_on_error_container_dark</item>
+        <item name="android:colorBackground">@color/pvot_background_dark</item>
+        <item name="colorOnBackground">@color/pvot_on_background_dark</item>
+        <item name="colorSurface">@color/pvot_surface_dark</item>
+        <item name="colorOnSurface">@color/pvot_on_surface_dark</item>
+        <item name="colorSurfaceVariant">@color/pvot_surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/pvot_on_surface_variant_dark</item>
+        <item name="colorOutline">@color/pvot_outline_dark</item>
+        <item name="colorOutlineVariant">@color/pvot_outline_variant_dark</item>
+        <item name="colorSurfaceInverse">@color/pvot_inverse_surface_dark</item>
+        <item name="colorOnSurfaceInverse">@color/pvot_inverse_on_surface_dark</item>
+        <item name="colorPrimaryInverse">@color/pvot_inverse_primary_dark</item>
+        <item name="appLogo">@drawable/ic_app_logo</item>
+    </style>
+    <style name="Theme.PvotMail.Startup" parent="Theme2.Main.Startup" />
+
+    <style name="Theme.PvotMail.Light" parent="Theme.PvotMail.Base.Light">
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
+        <item name="actionBarPopupTheme">@style/Widget.App.ActionMode.PopupMenu</item>
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+
+        <item name="iconStarColor">#fbbc04</item>
+
+        <item name="textColorPrimaryRecipientDropdown">@android:color/primary_text_light</item>
+        <item name="textColorSecondaryRecipientDropdown">@android:color/secondary_text_light</item>
+
+        <item name="messageListSwipeSelectColor">@color/material_blue_600</item>
+        <item name="messageListSwipeToggleReadColor">@color/material_blue_600</item>
+        <item name="messageListSwipeToggleStarColor">@color/material_orange_600</item>
+        <item name="messageListSwipeArchiveColor">@color/material_green_600</item>
+        <item name="messageListSwipeDeleteColor">@color/material_red_600</item>
+        <item name="messageListSwipeSpamColor">@color/material_red_700</item>
+        <item name="messageListSwipeMoveColor">@color/material_purple_500</item>
+
+        <item name="contactPictureFallbackDefaultBackgroundColor">#ffababab</item>
+        <item name="contactPictureFallbackBackgroundColors">@array/contact_picture_fallback_background_colors_light</item>
+        <item name="contactTokenBackgroundColor">#ccc</item>
+        <item name="tintColorBulletPointPositive">#77aa22</item>
+        <item name="tintColorBulletPointNegative">#dd2222</item>
+        <item name="tintColorBulletPointNeutral">#888</item>
+
+        <item name="openpgp_black">#000</item>
+        <item name="openpgp_orange">#FF8800</item>
+        <item name="openpgp_red">#CC0000</item>
+        <item name="openpgp_green">#669900</item>
+        <item name="openpgp_blue">#336699</item>
+        <item name="openpgp_grey">#bbb</item>
+        <item name="openpgp_dark_grey">#888</item>
+    </style>
+
+    <style name="Theme.PvotMail.Dark" parent="Theme.PvotMail.Base.Dark">
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
+        <item name="actionBarPopupTheme">@style/Widget.App.ActionMode.PopupMenu</item>
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+
+        <item name="iconStarColor">#fdd663</item>
+
+        <item name="textColorPrimaryRecipientDropdown">@android:color/primary_text_dark</item>
+        <item name="textColorSecondaryRecipientDropdown">@android:color/secondary_text_dark</item>
+
+        <item name="messageListSwipeSelectColor">@color/material_blue_700</item>
+        <item name="messageListSwipeToggleReadColor">@color/material_blue_700</item>
+        <item name="messageListSwipeToggleStarColor">@color/material_orange_700</item>
+        <item name="messageListSwipeArchiveColor">@color/material_green_700</item>
+        <item name="messageListSwipeDeleteColor">@color/material_red_700</item>
+        <item name="messageListSwipeSpamColor">@color/material_red_800</item>
+        <item name="messageListSwipeMoveColor">@color/material_purple_600</item>
+
+        <item name="contactTokenBackgroundColor">#313131</item>
+        <item name="contactPictureFallbackDefaultBackgroundColor">#ff606060</item>
+        <item name="contactPictureFallbackBackgroundColors">@array/contact_picture_fallback_background_colors_dark</item>
+        <item name="tintColorBulletPointPositive">#77aa22</item>
+        <item name="tintColorBulletPointNegative">#dd2222</item>
+        <item name="tintColorBulletPointNeutral">#bbb</item>
+
+        <item name="openpgp_black">#fff</item>
+        <item name="openpgp_orange">#ee7700</item>
+        <item name="openpgp_red">#CC0000</item>
+        <item name="openpgp_green">#77aa00</item>
+        <item name="openpgp_blue">#6699cc</item>
+        <item name="openpgp_grey">#888</item>
+        <item name="openpgp_dark_grey">#bbb</item>
+    </style>
+
+    <style name="Theme.PvotMail.Light.Dialog.Translucent" parent="Theme.Material3.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+
+        <item name="tintColorBulletPointPositive">#77aa22</item>
+        <item name="tintColorBulletPointNegative">#dd2222</item>
+        <item name="tintColorBulletPointNeutral">#bbb</item>
+    </style>
+
+    <style name="Theme.PvotMail.Light.Dialog" parent="Theme.PvotMail.Light" />
+    <style name="Theme.PvotMail.Dark.Dialog" parent="Theme.PvotMail.Dark" />
+
+    <style name="Theme.PvotMail.Dark.Dialog.Translucent" parent="Theme.Material3.Dark.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+
+        <item name="tintColorBulletPointPositive">#77aa22</item>
+        <item name="tintColorBulletPointNegative">#dd2222</item>
+        <item name="tintColorBulletPointNeutral">#bbb</item>
+    </style>
+
+    <style name="Theme.PvotMail.DayNight" parent="Theme.PvotMail.Light" />
+    <style name="Theme.PvotMail.DayNight.Dialog" parent="Theme.PvotMail.Light.Dialog" />
+    <style name="Theme.PvotMail.DayNight.Dialog.Translucent" parent="Theme.PvotMail.Light.Dialog.Translucent" />
+
+</resources>

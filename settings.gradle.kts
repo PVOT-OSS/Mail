@@ -88,6 +88,8 @@ include(
     ":app-thunderbird:benchmarks",
 )
 
+include(":app-pvotmail")
+
 includeBuild("PvotLib")
 
 include(":benchmarks")

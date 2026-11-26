@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+
+    <style name="Theme.PvotMail.DayNight" parent="Theme.PvotMail.Dark" />
+    <style name="Theme.PvotMail.DayNight.Dialog" parent="Theme.PvotMail.Dark.Dialog" />
+    <style name="Theme.PvotMail.DayNight.Dialog.Translucent" parent="Theme.PvotMail.Dark.Dialog.Translucent" />
+
+</resources>
