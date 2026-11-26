@@ -16,6 +16,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.thunderbird.core.android.account.SortType
 import net.thunderbird.core.common.mail.Flag
@@ -52,6 +54,7 @@ class MessageListViewModel(
     )
 
     private val pendingArchives = PendingArchives()
+    private val filterState = MutableStateFlow(FilterState())
     private val effectChannel = Channel<MessageListEffect>(Channel.BUFFERED)
     val effects: Flow<MessageListEffect> = effectChannel.receiveAsFlow()
 
@@ -64,8 +67,12 @@ class MessageListViewModel(
         .mapLatest { messageListLoader.getMessageList(config).messageListItems.map { it.toRow() } }
         .flowOn(ioDispatcher)
 
-    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys) { rows, pending ->
-        MessageListUiState(isLoading = false, rows = rows.without(pending))
+    val state: StateFlow<MessageListUiState> = combine(loadedRows, pendingArchives.keys, filterState) {
+            rows,
+            pending,
+            filter,
+        ->
+        MessageListUiState(isLoading = false, rows = rows.without(pending).filteredBy(filter), filter = filter)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), MessageListUiState())
 
     fun onEvent(event: MessageListEvent) {
@@ -76,6 +83,8 @@ class MessageListViewModel(
             }
 
             is MessageListEvent.UndoArchive -> pendingArchives.undo(event.key)
+
+            MessageListEvent.ToggleFilter -> filterState.update { it.copy(enabled = !it.enabled) }
 
             is MessageListEvent.CommitArchive -> pendingArchives.take(event.key)?.let { archive(listOf(it)) }
 

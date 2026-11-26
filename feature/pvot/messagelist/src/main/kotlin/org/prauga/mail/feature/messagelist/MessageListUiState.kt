@@ -8,6 +8,7 @@ import app.k9mail.legacy.message.controller.MessageReference
 data class MessageListUiState(
     val isLoading: Boolean = true,
     val rows: List<MessageRow> = emptyList(),
+    val filter: FilterState = FilterState(),
 )
 
 data class MessageRow(

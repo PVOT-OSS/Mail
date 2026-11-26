@@ -12,6 +12,13 @@
     <string name="messagelist_archived">Archived</string>
     <string name="messagelist_undo">Undo</string>
     <string name="messagelist_new_message">New message</string>
+    <string name="messagelist_filter">Filter</string>
+    <string name="messagelist_filter_on">On</string>
+    <string name="messagelist_filter_off">Off</string>
+    <string name="messagelist_filtered_by">Filtered by</string>
+    <string name="messagelist_filter_unread">Unread</string>
+    <string name="messagelist_filter_flagged">Flagged</string>
+    <string name="messagelist_filter_attachments">Attachments</string>
     <string name="messagelist_unread">Unread</string>
     <string name="messagelist_starred">Starred</string>
     <string name="messagelist_has_attachments">Has attachments</string>

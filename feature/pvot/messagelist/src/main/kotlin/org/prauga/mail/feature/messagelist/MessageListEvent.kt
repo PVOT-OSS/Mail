@@ -6,6 +6,7 @@ package org.prauga.mail.feature.messagelist
 sealed interface MessageListEvent {
     data class Archive(val row: MessageRow) : MessageListEvent
     data class ToggleRead(val row: MessageRow) : MessageListEvent
+    data object ToggleFilter : MessageListEvent
     data class UndoArchive(val key: Long) : MessageListEvent
     data class CommitArchive(val key: Long) : MessageListEvent
 }
