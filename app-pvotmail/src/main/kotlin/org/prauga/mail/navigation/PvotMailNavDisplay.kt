@@ -3,14 +3,12 @@
 
 package org.prauga.mail.navigation
 
-import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -20,7 +18,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import app.k9mail.legacy.message.controller.MessageReference
-import com.fsck.k9.activity.MessageHomeActivity
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.designsystem.adaptive.rememberPvotWindowLayout
 import com.prauga.pvot.designsystem.motion.PvotPageTransitions
@@ -33,10 +30,10 @@ import org.prauga.mail.feature.mailboxes.MailboxesScreen
 import org.prauga.mail.feature.mailboxes.starredSearch
 import org.prauga.mail.feature.messagelist.MessageListScreen
 import org.prauga.mail.feature.messagelist.MessageSearchScreen
+import org.prauga.mail.feature.reader.ReaderScreen
 
 @Composable
 fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val backStack = rememberNavBackStack(MailboxesRoute)
     val noMailboxSelected = stringResource(R.string.pvot_mail_no_mailbox_selected)
     val twoPane = rememberPvotWindowLayout().twoPane
@@ -60,19 +57,22 @@ fun PvotMailNavDisplay(onOpenSettings: () -> Unit, modifier: Modifier = Modifier
         transitionSpec = { PvotPageTransitions.push() },
         popTransitionSpec = { PvotPageTransitions.pop() },
         predictivePopTransitionSpec = { PvotPageTransitions.pop() },
-        entryProvider = mailEntries(backStack, twoPane, context, onOpenSettings),
+        entryProvider = mailEntries(backStack, twoPane, onOpenSettings),
     )
 }
 
 private fun mailEntries(
     backStack: NavBackStack<NavKey>,
     twoPane: Boolean,
-    context: Context,
     onOpenSettings: () -> Unit,
 ) = entryProvider {
     fun openList(route: MessageListRoute) {
-        backStack.removeAll { it is MessageListRoute || it is MessageSearchRoute }
+        backStack.removeAll { it is MessageListRoute || it is MessageSearchRoute || it is MessageRoute }
         backStack.add(route)
+    }
+    fun openMessage(reference: MessageReference) {
+        backStack.removeAll { it is MessageRoute }
+        backStack.add(MessageRoute.of(reference))
     }
     entry<MailboxesRoute>(metadata = sidebarPane()) {
         MailboxesScreen(
@@ -92,11 +92,14 @@ private fun mailEntries(
             search = route.search,
             title = route.title,
             subtitle = route.subtitle,
-            onOpenMessage = { reference -> openMessage(context, reference) },
+            onOpenMessage = ::openMessage,
             onNewMessage = { backStack.add(ComposeRoute.of(route.search.accountIds.singleOrNull())) },
             onOpenSearch = { backStack.add(MessageSearchRoute.of(route.title, route.search)) },
             onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }),
         )
+    }
+    entry<MessageRoute>(metadata = detailPane()) { route ->
+        ReaderScreen(reference = route.reference, onBack = if (twoPane) null else ({ backStack.removeLastOrNull() }))
     }
     entry<ComposeRoute>(metadata = pageSheet()) { route ->
         ComposerScreen(accountId = route.account, onClose = { backStack.removeLastOrNull() })
@@ -105,7 +108,7 @@ private fun mailEntries(
         MessageSearchScreen(
             search = route.search,
             scopeTitle = route.scopeTitle,
-            onOpenMessage = { reference -> openMessage(context, reference) },
+            onOpenMessage = ::openMessage,
             onClose = { backStack.removeLastOrNull() },
         )
     }
@@ -114,10 +117,4 @@ private fun mailEntries(
 private fun folderSearch(accountId: AccountId, folderId: Long) = LocalMessageSearch().apply {
     addAccountId(accountId)
     addAllowedFolder(folderId)
-}
-
-private fun openMessage(context: Context, reference: MessageReference) {
-    context.startActivity(
-        MessageHomeActivity.actionDisplayMessageIntent(context, reference, messageViewOnly = true),
-    )
 }

@@ -4,6 +4,7 @@
 package org.prauga.mail.navigation
 
 import androidx.navigation3.runtime.NavKey
+import app.k9mail.legacy.message.controller.MessageReference
 import kotlin.io.encoding.Base64
 import kotlinx.serialization.Serializable
 import net.thunderbird.feature.account.AccountId
@@ -43,9 +44,19 @@ data class MessageSearchRoute(val scopeTitle: String, private val encodedSearch:
 @Serializable
 data class ComposeRoute(private val accountId: String? = null) : NavKey {
     val account: AccountId?
-        get() = accountId?.let(AccountIdFactory::of)
+        get() = accountId?.let { AccountIdFactory.of(it) }
 
     companion object {
         fun of(account: AccountId?) = ComposeRoute(account?.toString())
+    }
+}
+
+@Serializable
+data class MessageRoute(private val identity: String) : NavKey {
+    val reference: MessageReference
+        get() = requireNotNull(MessageReference.parse(identity)) { "Invalid message reference" }
+
+    companion object {
+        fun of(reference: MessageReference) = MessageRoute(reference.toIdentityString())
     }
 }

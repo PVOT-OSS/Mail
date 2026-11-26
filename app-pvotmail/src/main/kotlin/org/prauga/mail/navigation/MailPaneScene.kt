@@ -21,6 +21,10 @@ fun sidebarPane() = metadata { put(SidebarPane, true) }
 
 fun contentPane() = metadata { put(ContentPane, true) }
 
+object DetailPane : NavMetadataKey<Boolean>
+
+fun detailPane() = metadata { put(DetailPane, true) }
+
 private class MailPaneScene<T : Any>(
     override val key: Any,
     override val previousEntries: List<NavEntry<T>>,
@@ -43,12 +47,17 @@ class MailPaneSceneStrategy<T : Any>(
     private val placeholder: @Composable () -> Unit,
 ) : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
-        val last = entries.lastOrNull()
+        val last = entries.lastOrNull()?.takeIf { twoPane } ?: return null
+        val list = entries.findLast { it.metadata.contains(ContentPane) }
         val sidebar = entries.findLast { it.metadata.contains(SidebarPane) }
-        val detail = last?.takeIf { it.metadata.contains(ContentPane) }
-        val showsPanes = last === sidebar || detail != null
-        return sidebar?.takeIf { twoPane && showsPanes }?.let {
-            MailPaneScene(SCENE_KEY, entries.dropLast(1), it, detail, placeholder)
+        val panes = when {
+            last.metadata.contains(DetailPane) -> list?.let { it to last }
+            last.metadata.contains(ContentPane) -> sidebar?.let { it to last }
+            last === sidebar -> last to null
+            else -> null
+        }
+        return panes?.let { (first, second) ->
+            MailPaneScene(SCENE_KEY, entries.dropLast(1), first, second, placeholder)
         }
     }
 

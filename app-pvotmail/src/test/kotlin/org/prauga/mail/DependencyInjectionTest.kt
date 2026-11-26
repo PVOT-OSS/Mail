@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.work.WorkerParameters
 import app.k9mail.core.ui.compose.common.window.FoldableStateObserver
 import app.k9mail.feature.account.common.domain.entity.InteractionMode
+import app.k9mail.legacy.message.controller.MessageReference
 import com.fsck.k9.job.MailSyncWorker
 import com.fsck.k9.job.SyncDebugWorker
 import com.fsck.k9.mail.Part
@@ -47,6 +48,7 @@ import org.koin.test.verify.verify
 import org.openintents.openpgp.OpenPgpApiManager
 import org.prauga.mail.feature.composer.ComposerViewModel
 import org.prauga.mail.feature.messagelist.MessageListViewModel
+import org.prauga.mail.feature.reader.ReaderViewModel
 
 class DependencyInjectionTest {
 
@@ -87,6 +89,7 @@ class DependencyInjectionTest {
                 definition<OpenPgpApiManager>(LifecycleOwner::class),
                 definition<MessageListViewModel>(LocalMessageSearch::class),
                 definition<ComposerViewModel>(AccountId::class),
+                definition<ReaderViewModel>(MessageReference::class),
                 definition<SetupArchiveFolderDialogContract.ViewModel>(SetupArchiveFolderDialogContract.State::class),
                 definition<ThundermailContract.ViewModel>(ThundermailContract.State::class),
                 definition<MessageReaderViewContract.ViewModel<Part>>(MessageReaderViewContract.State::class),
