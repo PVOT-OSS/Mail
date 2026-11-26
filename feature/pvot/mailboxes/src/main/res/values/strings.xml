@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <string name="mailboxes_title">Mailboxes</string>
+    <string name="mailboxes_all_inboxes">All Inboxes</string>
+    <string name="mailboxes_new_message">New message</string>
+    <string name="mailboxes_settings">Settings</string>
+</resources>
